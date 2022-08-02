@@ -58,7 +58,8 @@ class BuildWorker(
         val buildReportRepository: BuildReportRepository,
         val jUnitReportRepository: JUnitReportRepository,
         val jacocoReportRepository: JacocoReportRepository,
-        val buildReportBuilder: BuildReportBuilder) {
+        val buildReportBuilderMaven: BuildReportBuilderMaven,
+        val buildReportBuilderGradle: BuildReportBuilderGradle) {
 
     val LOG = LoggerFactory.getLogger(this.javaClass.name)
 
@@ -77,7 +78,7 @@ class BuildWorker(
      */
     @Async
     @Transactional
-    fun checkProject(projectFolder: File, authorsStr: String, submission: Submission,
+    fun checkSubmission(projectFolder: File, authorsStr: String, submission: Submission,
                           principalName: String?, dontChangeStatusDate: Boolean = false, rebuildByTeacher: Boolean = false) {
         val assignment = assignmentRepository.findById(submission.assignmentId).orElse(null)
         val realPrincipalName = if (rebuildByTeacher) submission.submitterUserId else principalName
@@ -130,7 +131,7 @@ class BuildWorker(
             result.tooMuchOutput() -> submission.setStatus(SubmissionStatus.TOO_MUCH_OUTPUT,
                                                                     dontUpdateStatusDate = dontChangeStatusDate)
             else -> { // get build report
-                val buildReport = buildReportBuilder.build(result.outputLines, projectFolder.absolutePath,
+                val buildReport = buildReportBuilderMaven.build(result.outputLines, projectFolder.absolutePath,
                         assignment, submission)
 
                 // clear previous indicators except PROJECT_STRUCTURE
@@ -230,7 +231,7 @@ class BuildWorker(
                         LOG.info("Finished maven invocation (for coverage)")
 
                         // check again the result of the tests
-                        val buildReportCoverage = buildReportBuilder.build(result.outputLines, projectFolder.absolutePath,
+                        val buildReportCoverage = buildReportBuilderMaven.build(result.outputLines, projectFolder.absolutePath,
                                 assignment, submission)
                         if (buildReportCoverage.hasJUnitErrors(TestType.STUDENT) == true) {
                             LOG.warn("Submission ${submission.id} failed executing student tests when isolated from teacher tests")
@@ -285,7 +286,7 @@ class BuildWorker(
             else -> { 
 
                 // get build report
-                val buildReport = buildReportBuilder.build(result.outputLines, projectFolder.absolutePath,
+                val buildReport = buildReportBuilderGradle.build(result.outputLines, projectFolder.absolutePath,
                         assignment, submission)
 
                 // clear previous indicators except PROJECT_STRUCTURE
@@ -395,16 +396,16 @@ class BuildWorker(
             val mavenResult = mavenInvoker.run(assignmentFolder, principalName, assignment.maxMemoryMb)
             if (!mavenResult.expiredByTimeout) {
                 LOG.info("Maven invoker OK for ${assignment.id}")
-                return buildReportBuilder.build(mavenResult.outputLines, assignmentFolder.absolutePath, assignment)
+                return buildReportBuilderMaven.build(mavenResult.outputLines, assignmentFolder.absolutePath, assignment)
             } else {
                 LOG.info("Maven invoker aborted by timeout for ${assignment.id}")
             }
-        } else { //Assignment is Gradle
+        } else if (assignment.compiler == Compiler.GRADLE) { //Assignment is Gradle
             val gradleResult = gradleInvoker.run(assignmentFolder, principalName, assignment)
             if (!gradleResult.expiredByTimeout) {
                 LOG.info("Gradle invoker OK for ${assignment.id}")
 
-                return buildReportBuilder.build(gradleResult.outputLines, assignmentFolder.absolutePath, assignment)
+                return buildReportBuilderGradle.build(gradleResult.outputLines, assignmentFolder.absolutePath, assignment)
             } else {
                 LOG.info("Gradle invoker aborted by timeout for ${assignment.id}")
             }

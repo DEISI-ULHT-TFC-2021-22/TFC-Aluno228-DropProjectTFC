@@ -31,7 +31,7 @@ import org.dropProject.dao.Assignment
 import org.dropProject.dao.Language
 import org.dropProject.forms.SubmissionMethod
 import org.dropProject.repository.AssignmentTestMethodRepository
-import org.dropProject.services.BuildReportBuilder
+import org.dropProject.services.BuildReportBuilderMaven
 import org.junit.Ignore
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.ActiveProfiles
@@ -44,7 +44,7 @@ class TestBuildReport {
     @Autowired
     lateinit var resourceLoader: ResourceLoader
 
-    val buildReportBuilder = BuildReportBuilder()
+    val buildReportBuilder = BuildReportBuilderMaven()
 
     private val dummyJavaAssignment = Assignment(id = "testJavaProj", name = "Test Project (for automatic tests)",
             packageName = "org.testProj", ownerUserId = "teacher1",
@@ -74,7 +74,6 @@ class TestBuildReport {
 
     @Test
     fun testFatalError2() {
-
         val mavenOutputLines = resourceLoader.getResource("file:src/test/sampleMavenOutputs/fatalError2.txt").file.readLines()
 
         val buildReport = buildReportBuilder.build(mavenOutputLines,

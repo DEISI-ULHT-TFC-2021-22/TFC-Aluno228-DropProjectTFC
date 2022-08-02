@@ -66,7 +66,6 @@ class MavenInvoker {
      * @return a Result
      */
     fun run(mavenizedProjectFolder: File, principalName: String?, maxMemoryMb: Int?) : Result {
-
         if (!File(mavenRepository).exists()) {
             val success = File(mavenRepository).mkdirs()
             if (!success) {
@@ -111,6 +110,7 @@ class MavenInvoker {
 //              </configuration>
 //            </plugin>
 
+        //Get compiler logs
         var numLines = 0
         request.setOutputHandler {
             line -> run {
@@ -136,6 +136,7 @@ class MavenInvoker {
 
         replacedPomFile.delete()
 
+        //Check logs for errors
         if (result.exitCode != 0) {
             if (result.executionException != null) {
                 if (result.executionException is org.apache.maven.shared.utils.cli.CommandLineTimeOutException) {

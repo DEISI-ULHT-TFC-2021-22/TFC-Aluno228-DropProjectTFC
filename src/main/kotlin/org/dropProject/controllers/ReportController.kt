@@ -28,6 +28,7 @@ import org.commonmark.parser.Parser
 import org.commonmark.renderer.html.HtmlRenderer
 import org.dropProject.MAVEN_MAX_EXECUTION_TIME
 import org.dropProject.dao.*
+import org.dropProject.data.BuildReport
 import org.dropProject.data.AuthorDetails
 import org.dropProject.data.GroupedProjectGroups
 import org.dropProject.data.TestType
@@ -79,7 +80,8 @@ class ReportController(
         val submissionReportRepository: SubmissionReportRepository,
         val buildReportRepository: BuildReportRepository,
         val assignmentTeacherFiles: AssignmentTeacherFiles,
-        val buildReportBuilder: BuildReportBuilder,
+        val buildReportBuilderMaven: BuildReportBuilderMaven,
+        val buildReportBuilderGradle: BuildReportBuilderGradle,
         val gitClient: GitClient,
         val submissionService: SubmissionService,
         val storageService: StorageService,
@@ -166,6 +168,7 @@ class ReportController(
 
     /**
      * Controller that handles requests for a [Submission]'s "Build Report".
+     * TO DO: Add Gradle version
      *
      * @param submissionId is a Long identifying the relevant Submission
      * @param model is a [ModelMap] that will be populated with information to use in a View
@@ -190,14 +193,15 @@ class ReportController(
                 }
             }
 
+            //Check if submission has been deleted
             if (submission.getStatus() == SubmissionStatus.DELETED) {
                 throw AccessDeniedException("This submission was deleted")
             }
 
             model["numSubmissions"] = submissionRepository.countBySubmitterUserIdAndAssignmentId(principal.realName(), submission.assignmentId)
 
+            //Get assignment
             val assignment = assignmentRepository.findById(submission.assignmentId).orElse(null)
-
             model["assignment"] = assignment
 
             model["submission"] = submission
@@ -248,11 +252,19 @@ class ReportController(
                     }
                     model["authors"] = authors
 
+                    //Save build report
                     submission.buildReportId?.let {
                         buildReportId ->
                             val buildReportDB = buildReportRepository.getById(buildReportId)
-                            model["buildReport"] = buildReportBuilder.build(buildReportDB.buildReport.split("\n"),
+
+                            //Check for assignment compiler
+                            if (assignment.compiler == Compiler.MAVEN) {
+                                model["buildReport"] = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                                     mavenizedProjectFolder.absolutePath, assignment, submission)
+                            } else {
+                                model["buildReport"] = buildReportBuilderGradle.build(buildReportDB.buildReport.split("\n"),
+                                    mavenizedProjectFolder.absolutePath, assignment, submission)
+                            }
                     }
                 }
             }
@@ -567,8 +579,16 @@ class ReportController(
                     val mavenizedProjectFolder = assignmentTeacherFiles.getProjectFolderAsFile(submission,
                             submission.getStatus() == SubmissionStatus.VALIDATED_REBUILT)
                     val buildReportDB = buildReportRepository.getById(buildReportId)
-                    val buildReport = buildReportBuilder.build(buildReportDB.buildReport.split("\n"),
+
+                    //Check compiler of assignment
+                    val buildReport: BuildReport
+                    if (assignment.compiler == Compiler.MAVEN) {
+                        buildReport = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                             mavenizedProjectFolder.absolutePath, assignment, submission)
+                    } else {
+                        buildReport = buildReportBuilderGradle.build(buildReportDB.buildReport.split("\n"),
+                            mavenizedProjectFolder.absolutePath, assignment, submission)
+                    }
                     submission.ellapsed = buildReport.elapsedTimeJUnit()
                     submission.teacherTests = buildReport.junitSummaryAsObject()
             }
@@ -612,8 +632,15 @@ class ReportController(
                         val mavenizedProjectFolder = assignmentTeacherFiles.getProjectFolderAsFile(submission,
                                 submission.getStatus() == SubmissionStatus.VALIDATED_REBUILT)
                         val buildReportDB = buildReportRepository.getById(buildReportId)
-                        val buildReport = buildReportBuilder.build(buildReportDB.buildReport.split("\n"),
+                        //Check assignment compiler
+                        val buildReport: BuildReport
+                        if (assignment.compiler == Compiler.MAVEN) {
+                            buildReport = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                                 mavenizedProjectFolder.absolutePath, assignment, submission)
+                        } else {
+                            buildReport = buildReportBuilderGradle.build(buildReportDB.buildReport.split("\n"),
+                                mavenizedProjectFolder.absolutePath, assignment, submission)
+                        }
                         submission.ellapsed = buildReport.elapsedTimeJUnit()
                         submission.teacherTests = buildReport.junitSummaryAsObject(TestType.TEACHER)
                         submission.hiddenTests = buildReport.junitSummaryAsObject(TestType.HIDDEN)
@@ -666,8 +693,15 @@ class ReportController(
                     val mavenizedProjectFolder = assignmentTeacherFiles.getProjectFolderAsFile(submission,
                             submission.getStatus() == SubmissionStatus.VALIDATED_REBUILT)
                     val buildReportDB = buildReportRepository.getById(buildReportId)
-                    val buildReport = buildReportBuilder.build(buildReportDB.buildReport.split("\n"),
+                    //Check assignment compiler
+                    val buildReport: BuildReport
+                    if (assignment.compiler == Compiler.MAVEN) {
+                        buildReport = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                             mavenizedProjectFolder.absolutePath, assignment, submission)
+                    } else {
+                        buildReport = buildReportBuilderGradle.build(buildReportDB.buildReport.split("\n"),
+                            mavenizedProjectFolder.absolutePath, assignment, submission)
+                    }
                     submission.ellapsed = buildReport.elapsedTimeJUnit()
                     if (assignment.acceptsStudentTests) {
                         submission.studentTests = buildReport.junitSummaryAsObject(TestType.STUDENT)

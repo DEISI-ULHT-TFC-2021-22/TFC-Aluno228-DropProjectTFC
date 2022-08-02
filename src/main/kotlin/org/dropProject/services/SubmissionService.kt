@@ -22,10 +22,11 @@ package org.dropProject.services
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import org.dropProject.dao.Assignment
+import org.dropProject.dao.*
 import org.dropProject.dao.GitSubmission
 import org.dropProject.dao.Submission
 import org.dropProject.dao.SubmissionStatus
+import org.dropProject.data.BuildReport
 import org.dropProject.data.SubmissionInfo
 import org.dropProject.data.TestType
 import org.dropProject.repository.*
@@ -40,7 +41,8 @@ class SubmissionService(
         val submissionReportRepository: SubmissionReportRepository,
         val buildReportRepository: BuildReportRepository,
         val assignmentTeacherFiles: AssignmentTeacherFiles,
-        val buildReportBuilder: BuildReportBuilder) {
+        val buildReportBuilderMaven: BuildReportBuilderMaven,
+        val buildReportBuilderGradle: BuildReportBuilderGradle) {
 
     /**
      * Returns all the SubmissionInfo objects related with [assignment].
@@ -77,8 +79,14 @@ class SubmissionService(
                     val mavenizedProjectFolder = assignmentTeacherFiles.getProjectFolderAsFile(lastSubmission,
                             lastSubmission.getStatus() == SubmissionStatus.VALIDATED_REBUILT)
                     val buildReportDB = buildReportRepository.getById(buildReportId)
-                    val buildReport = buildReportBuilder.build(buildReportDB.buildReport.split("\n"),
+                    val buildReport: BuildReport
+                    if (assignment.compiler == Compiler.MAVEN) {
+                        buildReport = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                             mavenizedProjectFolder.absolutePath, assignment, lastSubmission)
+                    } else {
+                        buildReport = buildReportBuilderGradle.build(buildReportDB.buildReport.split("\n"),
+                            mavenizedProjectFolder.absolutePath, assignment, lastSubmission)
+                    }
                     lastSubmission.ellapsed = buildReport.elapsedTimeJUnit()
                     lastSubmission.teacherTests = buildReport.junitSummaryAsObject(TestType.TEACHER)
                     lastSubmission.hiddenTests = buildReport.junitSummaryAsObject(TestType.HIDDEN)

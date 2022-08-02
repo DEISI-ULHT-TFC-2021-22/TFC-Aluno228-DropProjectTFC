@@ -239,7 +239,6 @@ class UploadController(
 
 
     /**
-     * TODO: Added Gradle upload method next to Maven upload method
      * Controller that handles requests for the actual file upload that delivers/submits the student's code.
      *
      * @param uploadForm is an [Uploadform]
@@ -401,7 +400,7 @@ class UploadController(
                 submissionRepository.save(submission)
             }
 
-            buildWorker.checkProject(standardizedProjectFolder, authorsStr, submission, rebuildByTeacher = teacherRebuild,
+            buildWorker.checkSubmission(standardizedProjectFolder, authorsStr, submission, rebuildByTeacher = teacherRebuild,
             principalName = principal?.name)
         }
     }
@@ -594,7 +593,7 @@ class UploadController(
         submission.setStatus(SubmissionStatus.REBUILDING, dontUpdateStatusDate = true)
         submissionRepository.save(submission)
 
-        buildWorker.checkProject(oldProjectFolder, authors.joinToString(separator = "|"), submission,
+        buildWorker.checkSubmission(oldProjectFolder, authors.joinToString(separator = "|"), submission,
                 dontChangeStatusDate = true,
                 principalName = principal.realName())
 

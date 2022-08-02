@@ -7,11 +7,37 @@
 [![Apache License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 ![Docker Image Version (tag latest semver)](https://img.shields.io/docker/v/pedroalv3s/drop-project-mysql/v0.9.5?label=docker%20image)
 
+## Videos (Setup and Results)
+
+Setup video: https://youtu.be/DbW4vWih8h8
+
+This video explains the process of setting Drop Project up either locally or using the Heroku deployment service. This is not a necessary process to run the project as the heroku link, found in the chapter found below, allows you to run it using a version of Drop Project deployed by the GitHub owner.
+
+Results video: https://youtu.be/Bm7NHHo-Nao
+
+This video demonstrates how to achieve the results found in the report. This is not a guide of any sorts, serving simply as a means of showing that the results obtained can be found in the project. The user can also use this video to understand how the project works and how to move around it.
+
+## Heroku (Deployment and Usage)
+
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Diogo-a21905661/drop-project-tfc)
 
-Heroku link: https://drop-project-tfc.herokuapp.com/
+The button found above can be used to deploy the GitHub project to a server managed by Heroku but run by the user. Use this button in case you wish to setup the project using Heroku, therefore allowing it to be used by others who can access it.
 
-Video de Teste: https://youtu.be/PBT7qwgqtkA
+In case you dont want to setup the project, you can use the link found below to run the version that was deployed by the GitHub owner. This is run using the Heroku servers and is the latest version of the project.
+
+Link to Heroku: https://drop-project-tfc.herokuapp.com/
+
+## Additional GitHubs used
+
+Maven Assignment (Kotlin): https://github.com/Diogo-a21905661/test-kotlin-maven-assignment
+
+Gradle Assignment (Kotlin): https://github.com/Diogo-a21905661/test-kotlin-gradle-assignment
+
+Gradle Assignment (Java): https://github.com/Diogo-a21905661/test-java-gradle-assignment
+
+Submission (usable in both Maven and Gradle): https://github.com/Diogo-a21905661/test-kotlin-submission
+
+## Description
 
 A web application where students drop their projects to check for correctness and quality.
 

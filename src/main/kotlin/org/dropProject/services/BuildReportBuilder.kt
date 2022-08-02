@@ -21,10 +21,11 @@ package org.dropProject.services
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import org.dropProject.dao.Assignment
+import org.dropProject.dao.*
 import org.dropProject.dao.JUnitReport
 import org.dropProject.dao.JacocoReport
 import org.dropProject.dao.Submission
+import org.dropProject.data.*
 import org.dropProject.data.BuildReport
 import org.dropProject.repository.AssignmentTestMethodRepository
 import org.dropProject.repository.JUnitReportRepository
@@ -38,12 +39,13 @@ import java.util.logging.Logger
  * This class contains functions that perform the creation of [BuildReport]s for both [Assignment]s and [Submission]s.
  */
 @Service
-class BuildReportBuilder {
-
-    val LOG = LoggerFactory.getLogger(this.javaClass.name)
+abstract class BuildReportBuilder {
 
     @Autowired
-    lateinit var junitResultsParser: JunitResultsParser
+    lateinit var junitResultsParserMaven: JunitResultsParserMaven
+
+    @Autowired
+    lateinit var junitResultsParserGradle: JunitResultsParserGradle
 
     @Autowired
     lateinit var jacocoResultsParser: JacocoResultsParser
@@ -60,70 +62,15 @@ class BuildReportBuilder {
     /**
      * Builds a BuildReport
      *
-     * @param outputLines is a List of String with the output of a Maven build process
+     * @param outputLines is a List of String with the output of a build process
      * @param mavenizedProjectFolder is a String
      * @param assignment is an [Assignment]
      * @param submission is a [Submission]
      *
      * @return a [BuildReport]
      */
-    fun build(outputLines: List<String>,
+    abstract fun build(outputLines: List<String>,
               mavenizedProjectFolder: String,   
               assignment: Assignment,
-              submission: Submission? = null) : BuildReport {
-
-        //Get report from test execution (Submission)
-        val junitReportFromDB : List<JUnitReport>? =
-                if (submission != null) jUnitReportRepository.findBySubmissionId(submission.id) else null
-        LOG.info("JUNIT Report From DB: ${junitReportFromDB}")
-
-        val jUnitResults =
-                if (junitReportFromDB != null && !junitReportFromDB.isEmpty()) {
-                    LOG.info("Got jUnit Report from DB (submission)")
-                    junitReportFromDB
-                            .map { it -> junitResultsParser.parseXml(it.xmlReport) }
-                            .toList()
-                } else {
-                    try {
-                        // LOG.info("Got jUnit Report from File System")
-                        File("${mavenizedProjectFolder}/target/surefire-reports")
-                                .walkTopDown()
-                                .filter { it -> it.name.endsWith(".xml") }
-                                .map { it -> junitResultsParser.parseXml(it.readText()) }
-                                .toList()
-                    } catch (e: FileNotFoundException) {
-                        LOG.info("Not found ${mavenizedProjectFolder}/target/surefire-reports. Probably this assignment doesn't produce test results")
-                        emptyList<JUnitResults>()
-                    }
-                }
-        LOG.info("JUNIT Results: ${jUnitResults}")
-
-        //Submission (report from Jacoco)
-        val jacocoReportFromDB : List<JacocoReport>? =
-                if (submission != null) jacocoReportRepository.findBySubmissionId(submission.id)
-                else null
-
-        //Submission results?
-        val jacocoResults =
-            if (jacocoReportFromDB != null && !jacocoReportFromDB.isEmpty()) {
-                LOG.info("Got Jacoco Report from DB (submission)")
-                jacocoReportFromDB
-                        .map { it -> jacocoResultsParser.parseCsv(it.csvReport) }
-                        .toList()
-
-            } else {
-                emptyList<JacocoResults>()
-            }
-
-        //Test methods of assignment (in repository)
-        val assignmentTestMethods =
-                if (submission != null) {
-                    assignmentTestMethodRepository.findByAssignmentId(assignment.id)
-                } else {
-                    emptyList()
-                }
-        LOG.info("Assignment Test Methods: ${jUnitResults}")
-        return BuildReport(outputLines, mavenizedProjectFolder, assignment, jUnitResults, jacocoResults,
-                assignmentTestMethods)
-    }
+              submission: Submission? = null) : BuildReport 
 }

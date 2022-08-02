@@ -79,7 +79,7 @@ data class JUnitMethodResult(val methodName: String,
 /**
  * Represents the JUnit Test results for a certain Test class.
  *
- * @property testClassNam is a String, identifying the Test class (e.g. TestTeacher-01.java)
+ * @property testClassName is a String, identifying the Test class (e.g. TestTeacher-01.java)
  * @property fullTestClassName is a String, with the Test class name prefixed by the name of the respective package
  * @property numTests is an Int with the number of unit tests that were executed
  * @property numErrors is an Int with the number of unit tests that resulting in an error
@@ -145,7 +145,7 @@ data class JUnitResults(val testClassName: String,
  * Utility for parsing JUnit test results a String.
  */
 @Service
-class JunitResultsParser {
+abstract class JunitResultsParser {
 
     /**
      * Parses from a String the test results of testing a single Test class.
@@ -154,26 +154,5 @@ class JunitResultsParser {
      *
      * @return a [JUnitResults]
      */
-    fun parseXml(content: String) : JUnitResults {
-        val parser = TestSuiteXmlParser(PrintStreamLogger(System.out))
-        val byteArrayIs = ByteArrayInputStream(content.toByteArray())
-        val parseResults: List<ReportTestSuite> = parser.parse(InputStreamReader(byteArrayIs, Charsets.UTF_8))
-
-        assert(parseResults.size == 1)
-
-        val parseResult = parseResults[0]
-        val testCases : List<ReportTestCase> = parseResult.testCases
-
-        val junitMethodResults = testCases.map { JUnitMethodResult(it.name, it.fullName,
-                if (it.hasError()) JUnitMethodResultType.ERROR
-                else if (it.hasFailure()) JUnitMethodResultType.FAILURE
-                else if (it.hasSkipped()) JUnitMethodResultType.IGNORED else JUnitMethodResultType.SUCCESS,
-                it.failureType, it.failureErrorLine,
-                it.failureDetail) }.toList()
-
-        return JUnitResults(parseResult.name, parseResult.fullClassName,
-                parseResult.numberOfTests - parseResult.numberOfSkipped,
-                parseResult.numberOfErrors, parseResult.numberOfFailures, parseResult.numberOfSkipped,
-                parseResult.timeElapsed, junitMethodResults)
-    }
+    abstract fun parseXml(content: String) : JUnitResults
 }

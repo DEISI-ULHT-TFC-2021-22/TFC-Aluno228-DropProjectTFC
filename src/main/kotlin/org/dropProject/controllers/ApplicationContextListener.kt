@@ -121,33 +121,38 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
         LOG.info("*************************************************")
 
         //TODO: Have to add a sample Android assignment to my github
-        // It it's a fresh instance, create three initial assignments (one in Java, one in Kotlin and one in Android) just to play
+        //TODO: Test when assignments are not initially created (might cause error) 
+        // It it's a fresh instance, creat initial assignments (two in Maven, three in Gradle) just to test
         val assignments = assignmentRepository.findAll()
         if (assignments.size == 0) {
-            createAndPopulateSampleJavaAssignment()
-            createAndPopulateSampleKotlinAssignment()
+            createAndPopulateSampleMavenJavaAssignment()
+            createAndPopulateSampleMavenKotlinAssignment()
+            createAndPopulateSampleGradleKotlinAssignment()
         }
     }
 
-    private fun createAndPopulateSampleJavaAssignment() {
-        val assignment = Assignment(id = "sampleJavaProject", name = "Sample Java Assignment",
+    //Create sample Maven assignment for Java
+    private fun createAndPopulateSampleMavenJavaAssignment() {
+        val assignment = Assignment(id = "sampleMavenJavaProject", name = "Sample Maven Java Assignment",
                 packageName = "org.dropProject.samples.sampleJavaAssignment", ownerUserId = "teacher1",
-                submissionMethod = SubmissionMethod.UPLOAD,
+                submissionMethod = SubmissionMethod.UPLOAD, language = Language.JAVA, compiler = Compiler.MAVEN,
                 gitRepositoryUrl = "git@github.com:drop-project-edu/sampleJavaAssignment.git",
                 gitRepositoryPrivKey = sampleJavaAssignmentPrivateKey,
                 gitRepositoryPubKey = sampleJavaAssignmentPublicKey,
-                gitRepositoryFolder = "sampleJavaProject",
+                gitRepositoryFolder = "sampleMavenJavaProject",
                 active = true)
 
         assignmentService.addTagToAssignment(assignment, "sample")
+        assignmentService.addTagToAssignment(assignment, "maven")
+        assignmentService.addTagToAssignment(assignment, "java")
 
-        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleJavaProject",
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleMavenJavaProject",
                 testClass = "TestTeacherProject", testMethod = "testFindMax"))
-        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleJavaProject",
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleMavenJavaProject",
                 testClass = "TestTeacherProject", testMethod = "testFindMaxWithNull"))
-        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleJavaProject",
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleMavenJavaProject",
                 testClass = "TestTeacherProject", testMethod = "testFindMaxAllNegative"))
-        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleJavaProject",
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleMavenJavaProject",
                 testClass = "TestTeacherProject", testMethod = "testFindMaxNegativeAndPositive"))
 
         val gitRepository = assignment.gitRepositoryUrl
@@ -202,29 +207,29 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
             val author6 = Author(name = "Leo Da Vinci", userId = "student4")
             authorRepository.save(author6)
             uploadStudentSubmission(author6, "2020-12-17T14:37:00", "javaSubmission2Errors", "NOK", 2, 4)
-
-
         }
     }
 
-    private fun createAndPopulateSampleKotlinAssignment() {
-        val assignment = Assignment(id = "sampleKotlinProject", name = "Sample Kotlin Assignment",
+    //Create sample Maven assignment for Kotlin
+    private fun createAndPopulateSampleMavenKotlinAssignment() {
+        val assignment = Assignment(id = "sampleMavenKotlinProject", name = "Sample Maven Kotlin Assignment",
                 packageName = "org.dropProject.samples.sampleKotlinAssignment", ownerUserId = "teacher1",
-                submissionMethod = SubmissionMethod.UPLOAD, language = Language.KOTLIN,
+                submissionMethod = SubmissionMethod.UPLOAD, language = Language.KOTLIN, compiler = Compiler.MAVEN,
                 gitRepositoryUrl = "git@github.com:drop-project-edu/sampleKotlinAssignment.git",
                 gitRepositoryPrivKey = sampleJavaAssignmentPrivateKey,
                 gitRepositoryPubKey = sampleJavaAssignmentPublicKey,
-                gitRepositoryFolder = "sampleKotlinProject",
+                gitRepositoryFolder = "sampleMavenKotlinProject",
                 active = true)
 
         assignmentService.addTagToAssignment(assignment, "sample")
+        assignmentService.addTagToAssignment(assignment, "maven")
         assignmentService.addTagToAssignment(assignment, "kotlin")
 
-        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleKotlinProject",
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleMavenKotlinProject",
                 testClass = "TestTeacherProject", testMethod = "testFindMax"))
-        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleKotlinProject",
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleMavenKotlinProject",
                 testClass = "TestTeacherProject", testMethod = "testFindMaxAllNegative"))
-        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleKotlinProject",
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleMavenKotlinProject",
                 testClass = "TestTeacherProject", testMethod = "testFindMaxNegativeAndPositive"))
 
         val gitRepository = assignment.gitRepositoryUrl
@@ -248,7 +253,48 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
         }
     }
 
-    //TODO: Have to add new function around creating a sample Android assignment
+    //Create sample Gradle assignment for Kotlin
+    private fun createAndPopulateSampleGradleKotlinAssignment() {
+        val assignment = Assignment(id = "sampleGradleKotlinProject", name = "Sample Gradle Kotlin Assignment",
+                packageName = "", ownerUserId = "teacher1", compiler = Compiler.GRADLE,
+                submissionMethod = SubmissionMethod.UPLOAD, language = Language.KOTLIN,
+                gitRepositoryUrl = "git@github.com:Diogo-a21905661/test-kotlin-gradle-assignment.git",
+                gitRepositoryPrivKey = sampleJavaAssignmentPrivateKey,
+                gitRepositoryPubKey = sampleJavaAssignmentPublicKey,
+                gitRepositoryFolder = "sampleGradleKotlinProject",
+                active = true)
+
+        assignmentService.addTagToAssignment(assignment, "sample")
+        assignmentService.addTagToAssignment(assignment, "gradle")
+        assignmentService.addTagToAssignment(assignment, "kotlin")
+
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleGradleKotlinProject",
+                testClass = "TestTeacherProject", testMethod = "testFindMax"))
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleGradleKotlinProject",
+                testClass = "TestTeacherProject", testMethod = "testFindMaxAllNegative"))
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleGradleKotlinProject",
+                testClass = "TestTeacherProject", testMethod = "testFindMaxNegativeAndPositive"))
+
+        val gitRepository = assignment.gitRepositoryUrl
+        try {
+            val directory = File(assignmentsRootLocation, assignment.id)
+            if (directory.exists()) {
+                directory.deleteRecursively()
+            }
+            gitClient.clone(gitRepository, directory, assignment.gitRepositoryPrivKey!!.toByteArray())
+            LOG.info("[${assignment.id}] Successfuly cloned ${gitRepository} to ${directory}")
+            // only save if it successfully cloned the assignment
+            assignmentRepository.save(assignment)
+
+            assigneeRepository.save(Assignee(assignmentId = assignment.id, authorUserId = "student1"))
+            assigneeRepository.save(Assignee(assignmentId = assignment.id, authorUserId = "student2"))
+            assigneeRepository.save(Assignee(assignmentId = assignment.id, authorUserId = "student4"))
+            assigneeRepository.save(Assignee(assignmentId = assignment.id, authorUserId = "student5"))
+
+        } catch (e: Exception) {
+            LOG.error("Error cloning ${gitRepository} - ${e}")
+        }
+    }
 
     /**
      * This is an auxiliary function to create fake submissions to place in the "in-memory" database.
@@ -261,7 +307,7 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
                 submissionDate = Timestamp.valueOf(LocalDateTime.parse(submissionDate)),
                 status = SubmissionStatus.VALIDATED.code,
                 statusDate = Timestamp.valueOf(LocalDateTime.parse(submissionDate)),
-                assignmentId = "sampleJavaProject",
+                assignmentId = "sampleMavenJavaProject",
                 submitterUserId = author.userId)
 
         submissionRepository.save(submission)
