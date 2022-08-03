@@ -35,7 +35,7 @@ class TestJunitResultsParser {
     @Autowired
     lateinit var resourceLoader: ResourceLoader
 
-    val junitResultsParser = org.dropProject.services.JunitResultsParser()
+    val junitResultsParser = org.dropProject.services.JunitResultsParserMaven()
     val jacocoResultsParser = org.dropProject.services.JacocoResultsParser()
 
     val junitXmlReportsRoot = "src/test/sampleJunitXmlReports"

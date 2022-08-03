@@ -44,7 +44,7 @@ import org.dropProject.dao.Assignment
 import org.dropProject.dao.Indicator
 import org.dropProject.dao.Language
 import org.dropProject.dao.SubmissionReport
-import org.dropProject.data.BuildReport
+import org.dropProject.data.BuildReportMaven
 import org.dropProject.forms.SubmissionMethod
 import org.dropProject.repository.AssignmentRepository
 import java.io.File
@@ -133,7 +133,7 @@ class UploadKotlinControllerTests {
         val structureErrors = reportResult.modelAndView!!.modelMap["structureErrors"] as List<String>
         assert(structureErrors.isEmpty())
 
-        val buildResult = reportResult.modelAndView!!.modelMap["buildReport"] as BuildReport
+        val buildResult = reportResult.modelAndView!!.modelMap["buildReport"] as BuildReportMaven
         assert(buildResult.compilationErrors().isEmpty())
         assert(buildResult.checkstyleErrors().isEmpty())
         assert(buildResult.PMDerrors().isEmpty())
@@ -170,7 +170,7 @@ class UploadKotlinControllerTests {
         val structureErrors = reportResult.modelAndView!!.modelMap["structureErrors"] as List<String>
         assert(structureErrors.isEmpty())
 
-        val buildResult = reportResult.modelAndView!!.modelMap["buildReport"] as BuildReport
+        val buildResult = reportResult.modelAndView!!.modelMap["buildReport"] as BuildReportMaven
         assert(buildResult.compilationErrors().isEmpty())
 
         assertEquals("checkstyle should have 5 errors", buildResult.checkstyleErrors().size, 5)

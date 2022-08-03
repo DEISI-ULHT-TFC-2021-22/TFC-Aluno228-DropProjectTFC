@@ -281,7 +281,7 @@ class BuildReportMaven(outputLines: List<String>,
     }
 
     //Check for PMD errors in maven output
-    private fun PMDerrors() : List<String> {
+    fun PMDerrors() : List<String> {
         return outputLines
                 .filter { it -> it.startsWith("[INFO] PMD Failure") }
                 .map { it -> it.substring(19) }  // to remove "[INFO] PMD Failure: "
