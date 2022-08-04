@@ -414,28 +414,50 @@ class UploadController(
         }
 
         val packageName = assignment.packageName.orEmpty().replace(".","/")
-
         if (!File(projectFolder, "src/${packageName}").existsCaseSensitive()) {
+            LOG.info("Should not be entering this part.")
             erros.add("O projecto não contém uma pasta 'src/${packageName}'")
         }
 
         //Check language (NEW: Added Gradle check)
         val mainFile = if (assignment.language == Language.JAVA) "Main.java" else "Main.kt"
         val mainLanguage = if (assignment.language == Language.JAVA) "java" else "kotlin"
-        if (assignment.compiler == Compiler.GRADLE) {
-            //Check if first file is language or package (full gradle file)
-            if (File(projectFolder, "src/${packageName}").existsCaseSensitive()) {
+        //Start by checking if package is empty (very complicated)
+        //TODO: Should simplify this part
+        if (packageName.isEmpty()) {
+            if (assignment.compiler == Compiler.GRADLE) {
+                //Check if main exists
+                if (!File(projectFolder, "src/main").existsCaseSensitive()) {
+
+                    if (!File(projectFolder, "src/${mainFile}").existsCaseSensitive()) {
+                        erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src'")
+                    }
+                } else { //main exists (TODO: Could be more specific)
+                    if (!File(projectFolder, "src/main/${mainLanguage}/${mainFile}").existsCaseSensitive()) {
+                        erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src/${mainLanguage}/${mainFile}'")
+                    } 
+                }
+            } else { //compiler is maven
+                if (!File(projectFolder, "src/${mainFile}").existsCaseSensitive()) {
+                    erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src'")
+                }
+            }
+        } else { //Package exists
+            if (assignment.compiler == Compiler.GRADLE) {    
+                //Check if main exists
+                if (!File(projectFolder, "src/main").existsCaseSensitive()) {
+                    if (!File(projectFolder, "src/${packageName}/${mainFile}").existsCaseSensitive()) {
+                        erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src/${packageName}'")
+                    }
+                } else { //main exists (TODO: Could be more specific)
+                    if (!File(projectFolder, "src/main/${mainLanguage}/${packageName}/${mainFile}").existsCaseSensitive()) {
+                        erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src/${mainLanguage}/${packageName}/${mainFile}'")
+                    } 
+                }
+            } else { //compiler is maven
                 if (!File(projectFolder, "src/${packageName}/${mainFile}").existsCaseSensitive()) {
                     erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src/${packageName}'")
                 }
-            } else {
-                if (!File(projectFolder, "src/main/${mainLanguage}/${packageName}/${mainFile}").existsCaseSensitive()) {
-                    erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src/${mainLanguage}/${packageName}/${mainFile}'")
-                } 
-            }
-        } else {
-            if (!File(projectFolder, "src/${packageName}/${mainFile}").existsCaseSensitive()) {
-                erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src/${packageName}'")
             }
         }
 

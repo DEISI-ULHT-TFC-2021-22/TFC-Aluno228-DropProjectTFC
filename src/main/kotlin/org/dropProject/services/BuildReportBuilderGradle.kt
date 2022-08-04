@@ -76,7 +76,7 @@ class BuildReportBuilderGradle : BuildReportBuilder() {
                                 .filter { it -> it.name.endsWith(".xml") }
                                 .map { it -> junitResultsParserGradle.parseXml(it.readText()) }
                                 .toList()
-                    } catch (e: FileNotFoundException) {
+                    } catch (e: FileNotFoundException) { //return no test results
                         LOG.info("Not found ${mavenizedProjectFolder}/build/test-results/test. Probably this assignment doesn't produce test results")
                         emptyList<JUnitResults>()
                     }
