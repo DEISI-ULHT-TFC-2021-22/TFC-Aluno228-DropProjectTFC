@@ -60,6 +60,8 @@ public class GradleInvoker {
      * @return a Result
      */
     fun run(projectFolder: File, principalName: String?, assignment: Assignment) : Result {
+        LOG.info("Project folder == ${projectFolder}")
+ 
         //Check if repository already exists
         if (!File(repository).exists()) {
             val success = File(repository).mkdirs()

@@ -542,7 +542,6 @@ class AssignmentService(
         if (assignmentRepository.findById(assignmentId).isEmpty) {
             return "Error: You are importing submissions to an assignment ($assignmentId) that doesn't exist. " +
                     "First, please create that assignment."
-
         }
 
         // make sure there are no submissions for this assignment

@@ -63,8 +63,6 @@ class JunitResultsParserGradle : JunitResultsParser() {
                 it.failureType, it.failureErrorLine,
                 it.failureDetail) }.toList()
 
-        //TODO: Add form of trimming values to only important parts (only test error)
-
         return JUnitResults(parseResult.name, parseResult.fullClassName,
                 parseResult.numberOfTests - parseResult.numberOfSkipped,
                 parseResult.numberOfErrors, parseResult.numberOfFailures, parseResult.numberOfSkipped,

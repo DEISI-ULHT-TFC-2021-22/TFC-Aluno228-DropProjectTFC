@@ -69,15 +69,15 @@ class BuildReportBuilderGradle : BuildReportBuilder() {
                             .map { it -> junitResultsParserGradle.parseXml(it.xmlReport) }
                             .toList()
                 } else {
+                    val reportLocation = "${mavenizedProjectFolder}/build/test-results/test"
                     try {
-                        val reportLocation = "${mavenizedProjectFolder}/build/test-results/test"
                         File(reportLocation)
                                 .walkTopDown()
                                 .filter { it -> it.name.endsWith(".xml") }
                                 .map { it -> junitResultsParserGradle.parseXml(it.readText()) }
                                 .toList()
                     } catch (e: FileNotFoundException) { //return no test results
-                        LOG.info("Not found ${mavenizedProjectFolder}/build/test-results/test. Probably this assignment doesn't produce test results")
+                        LOG.info("Not found ${reportLocation}. Probably this assignment doesn't produce test results")
                         emptyList<JUnitResults>()
                     }
                 }

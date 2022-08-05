@@ -408,75 +408,69 @@ class UploadController(
     //Check project structure (functions the same with gradle and maven projects) and return errors found
     //In this case we dont check for file existence, as that is already done in the BuildWorker class
     private fun checkProjectStructure(projectFolder: File, assignment: Assignment): List<String> {
+        LOG.info("Started checking project structure")
         val erros = ArrayList<String>()
+
+        //Replace package . with / to allow it to pass for files
+        val packageName = assignment.packageName.orEmpty().replace(".","/")
+
+        //Check language
+        val mainFile = if (assignment.language == Language.JAVA) "Main.java" else "Main.kt"
+        val mainLanguage = if (assignment.language == Language.JAVA) "java" else "kotlin"
+
+        //Check for src
         if (!File(projectFolder, "src").existsCaseSensitive()) {
             erros.add("O projecto não contém uma pasta 'src' na raiz")
         }
-
-        val packageName = assignment.packageName.orEmpty().replace(".","/")
-        if (!File(projectFolder, "src/${packageName}").existsCaseSensitive()) {
-            LOG.info("Should not be entering this part.")
-            erros.add("O projecto não contém uma pasta 'src/${packageName}'")
+        //check for package files
+        if (!File(projectFolder, "src/main").existsCaseSensitive()) {
+            if (!File(projectFolder, "src/${packageName}").existsCaseSensitive() && !packageName.isEmpty()) {
+                erros.add("O projecto não contém uma pasta 'src/${packageName}'")
+            }
+        } else {
+            if (!File(projectFolder, "src/main/${mainLanguage}/${packageName}").existsCaseSensitive() && !packageName.isEmpty()) {
+                erros.add("O projecto não contém uma pasta 'src/main/${mainLanguage}/${packageName}'")
+            }
         }
 
-        //Check language (NEW: Added Gradle check)
-        val mainFile = if (assignment.language == Language.JAVA) "Main.java" else "Main.kt"
-        val mainLanguage = if (assignment.language == Language.JAVA) "java" else "kotlin"
-        //Start by checking if package is empty (very complicated)
-        //TODO: Should simplify this part
-        if (packageName.isEmpty()) {
-            if (assignment.compiler == Compiler.GRADLE) {
-                //Check if main exists
-                if (!File(projectFolder, "src/main").existsCaseSensitive()) {
-
-                    if (!File(projectFolder, "src/${mainFile}").existsCaseSensitive()) {
-                        erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src'")
-                    }
-                } else { //main exists (TODO: Could be more specific)
-                    if (!File(projectFolder, "src/main/${mainLanguage}/${mainFile}").existsCaseSensitive()) {
-                        erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src/${mainLanguage}/${mainFile}'")
-                    } 
-                }
-            } else { //compiler is maven
-                if (!File(projectFolder, "src/${mainFile}").existsCaseSensitive()) {
-                    erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src'")
-                }
-            }
-        } else { //Package exists
-            if (assignment.compiler == Compiler.GRADLE) {    
-                //Check if main exists
-                if (!File(projectFolder, "src/main").existsCaseSensitive()) {
-                    if (!File(projectFolder, "src/${packageName}/${mainFile}").existsCaseSensitive()) {
-                        erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src/${packageName}'")
-                    }
-                } else { //main exists (TODO: Could be more specific)
-                    if (!File(projectFolder, "src/main/${mainLanguage}/${packageName}/${mainFile}").existsCaseSensitive()) {
-                        erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src/${mainLanguage}/${packageName}/${mainFile}'")
-                    } 
-                }
-            } else { //compiler is maven
+        //Check for compiler used
+        if (assignment.compiler == Compiler.GRADLE) { //compiler is gradle
+            //Check if main exists
+            if (!File(projectFolder, "src/main").existsCaseSensitive()) { //main doesnt exist
                 if (!File(projectFolder, "src/${packageName}/${mainFile}").existsCaseSensitive()) {
                     erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src/${packageName}'")
                 }
+            } else { //main exists (check for files)
+                if (
+                    !File(projectFolder, "src/main/${mainLanguage}").existsCaseSensitive() || 
+                    !File(projectFolder, "src/main/${mainLanguage}/${packageName}").existsCaseSensitive() || 
+                    !File(projectFolder, "src/main/${mainLanguage}/${packageName}/${mainFile}").existsCaseSensitive()
+                ) {
+                    erros.add("O projecto não contém o ficheiro ${mainFile}, suposto estar na pasta 'src/main/${mainLanguage}/${packageName}/${mainFile}'")
+                } 
+            }
+        } else { //compiler is maven
+            if (!File(projectFolder, "src/${packageName}/${mainFile}").existsCaseSensitive()) {
+                erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src/${packageName}'")
             }
         }
 
+        //Check for test teacher files (cant be)
         if (File(projectFolder, "src")
                 .walkTopDown()
                 .find { it.name.startsWith("TestTeacher") } != null) {
             erros.add("O projecto contém ficheiros cujo nome começa por 'TestTeacher'")
         }
 
+        //Check for README location
         val readme = File(projectFolder, "README.md")
         if (readme.exists() && !readme.isFile) {
             erros.add("O projecto contém uma pasta README.md mas devia ser um ficheiro")
         }
-
         return erros
     }
 
     /**
-     * NEW: Removed previous version to make one that works for all languages and compilers 
      * Transforms a student's submission/code from its original structure to a structure that respects the standard for the compiler (Maven or Gradle)
      * expected format.
      * @param projectFolder is a file
@@ -486,18 +480,24 @@ class UploadController(
      */
     private fun standardizeFolder(projectFolder: File, submission: Submission, assignment: Assignment, teacherRebuild: Boolean = false): File {
         val newProjectFolder = assignmentTeacherFiles.getProjectFolderAsFile(submission, teacherRebuild)
+        val folder = if (assignment.language == Language.JAVA) "java" else "kotlin"
 
         //Delete submission folder recursively
         newProjectFolder.deleteRecursively()
 
-        //NEW: Android files are in Kotlin so we start by checking with JAVA
-        val folder = if (assignment.language == Language.JAVA) "java" else "kotlin"
-
-        // first copy the project files submitted by the students
-        //NEW: Gradle standardization should be added here (NOT SURE HOW THAT WOULD HELP) to src/main/*language*/folder
-        FileUtils.copyDirectory(File(projectFolder, "src"), File(newProjectFolder, "src/main/${folder}")) {
+        // first copy the project files submitted by the students (main)
+        //check if project folder has main as first and language as second
+        if (File(projectFolder, "src/main").exists() && File(projectFolder, "src/main/${folder}").exists()) {
+            FileUtils.copyDirectory(File(projectFolder, "src/main/${folder}"), File(newProjectFolder, "src/main/${folder}")) {
             it.isDirectory || (it.isFile() && !it.name.startsWith("Test")) // exclude TestXXX classes
+            }
+        } else {
+            FileUtils.copyDirectory(File(projectFolder, "src"), File(newProjectFolder, "src/main/${folder}")) {
+            it.isDirectory || (it.isFile() && !it.name.startsWith("Test")) // exclude TestXXX classes
+            }
         }
+
+        // first copy the project files submitted by the students (test)
         if (assignment.acceptsStudentTests) {
             FileUtils.copyDirectory(File(projectFolder, "src"), File(newProjectFolder, "src/test/${folder}")) {
                 it.isDirectory || (it.isFile() && it.name.startsWith("Test")) // include TestXXX classes

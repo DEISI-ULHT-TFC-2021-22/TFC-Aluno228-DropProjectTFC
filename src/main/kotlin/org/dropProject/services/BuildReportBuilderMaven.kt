@@ -61,7 +61,6 @@ class BuildReportBuilderMaven : BuildReportBuilder() {
         //Get report from test execution (Submission)
         val junitReportFromDB : List<JUnitReport>? =
                 if (submission != null) jUnitReportRepository.findBySubmissionId(submission.id) else null
-        LOG.info("JUNIT Report From DB: ${junitReportFromDB}")
 
         val jUnitResults =
                 if (junitReportFromDB != null && !junitReportFromDB.isEmpty()) {
@@ -82,7 +81,6 @@ class BuildReportBuilderMaven : BuildReportBuilder() {
                         emptyList<JUnitResults>()
                     }
                 }
-        LOG.info("JUNIT Results: ${jUnitResults}")
 
         //Submission (report from Jacoco)
         val jacocoReportFromDB : List<JacocoReport>? =
@@ -108,7 +106,6 @@ class BuildReportBuilderMaven : BuildReportBuilder() {
                 } else {
                     emptyList()
                 }
-        LOG.info("Assignment Test Methods: ${jUnitResults}")
 
         LOG.info("Created build report for Maven.")
         return BuildReportMaven(outputLines, mavenizedProjectFolder, assignment, jUnitResults, jacocoResults,

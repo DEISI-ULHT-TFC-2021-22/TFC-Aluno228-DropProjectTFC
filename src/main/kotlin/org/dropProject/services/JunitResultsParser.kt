@@ -28,6 +28,7 @@ import org.apache.maven.plugins.surefire.report.ReportTestSuite
 import org.dropProject.Constants
 import org.dropProject.dao.Assignment
 import java.io.ByteArrayInputStream
+import org.slf4j.LoggerFactory
 import java.util.*
 
 enum class JUnitMethodResultType(val value: String) {
@@ -55,6 +56,8 @@ data class JUnitMethodResult(val methodName: String,
                              val failureErrorLine: String?,
                              val failureDetail: String?) {
 
+    val LOG = LoggerFactory.getLogger(this.javaClass.name)
+
     companion object {
         fun empty(): JUnitMethodResult {
             return JUnitMethodResult("", "", JUnitMethodResultType.EMPTY, null, null, null)
@@ -63,9 +66,13 @@ data class JUnitMethodResult(val methodName: String,
 
     internal val failureDetailLines = failureDetail?.lines()?.toMutableList()
 
+    //Remove report from unit tests if they start with at and doesnt contain method name   
     fun filterStacktrace(packageName: String) {
-        failureDetailLines?.removeIf { it.startsWith("\tat") && !it.contains(packageName) }
+        failureDetailLines?.removeIf { it.startsWith("\tat") && !it.contains(methodName) }
     }
+
+    //Version used in normal DP
+    //failureDetailLines?.removeIf { it.startsWith("\tat") && !it.contains(packageName) }
 
     fun getClassName(): String {
         return fullMethodName.removeSuffix(".${methodName}").split(".").last()

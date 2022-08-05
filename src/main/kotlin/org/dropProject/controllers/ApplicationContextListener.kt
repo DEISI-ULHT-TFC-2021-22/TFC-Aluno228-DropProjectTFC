@@ -128,6 +128,7 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
             createAndPopulateSampleMavenJavaAssignment()
             createAndPopulateSampleMavenKotlinAssignment()
             createAndPopulateSampleGradleKotlinAssignment()
+            createAndPopulateSampleGradleKotlinAssignmentNoPackage()
         }
     }
 
@@ -256,7 +257,7 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
     //Create sample Gradle assignment for Kotlin
     private fun createAndPopulateSampleGradleKotlinAssignment() {
         val assignment = Assignment(id = "sampleGradleKotlinProject", name = "Sample Gradle Kotlin Assignment",
-                packageName = "", ownerUserId = "teacher1", compiler = Compiler.GRADLE,
+                packageName = "org.dropProject.samples.sampleKotlinAssignment", ownerUserId = "teacher1", compiler = Compiler.GRADLE,
                 submissionMethod = SubmissionMethod.UPLOAD, language = Language.KOTLIN,
                 gitRepositoryUrl = "git@github.com:Diogo-a21905661/test-kotlin-gradle-assignment.git",
                 gitRepositoryPrivKey = sampleJavaAssignmentPrivateKey,
@@ -273,6 +274,49 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
         assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleGradleKotlinProject",
                 testClass = "TestTeacherProject", testMethod = "testFindMaxAllNegative"))
         assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleGradleKotlinProject",
+                testClass = "TestTeacherProject", testMethod = "testFindMaxNegativeAndPositive"))
+
+        val gitRepository = assignment.gitRepositoryUrl
+        try {
+            val directory = File(assignmentsRootLocation, assignment.id)
+            if (directory.exists()) {
+                directory.deleteRecursively()
+            }
+            gitClient.clone(gitRepository, directory, assignment.gitRepositoryPrivKey!!.toByteArray())
+            LOG.info("[${assignment.id}] Successfuly cloned ${gitRepository} to ${directory}")
+            // only save if it successfully cloned the assignment
+            assignmentRepository.save(assignment)
+
+            assigneeRepository.save(Assignee(assignmentId = assignment.id, authorUserId = "student1"))
+            assigneeRepository.save(Assignee(assignmentId = assignment.id, authorUserId = "student2"))
+            assigneeRepository.save(Assignee(assignmentId = assignment.id, authorUserId = "student4"))
+            assigneeRepository.save(Assignee(assignmentId = assignment.id, authorUserId = "student5"))
+
+        } catch (e: Exception) {
+            LOG.error("Error cloning ${gitRepository} - ${e}")
+        }
+    }
+
+    //Temporary function for testing
+    private fun createAndPopulateSampleGradleKotlinAssignmentNoPackage() {
+        val assignment = Assignment(id = "sampleGradleKotlinProjectNoPackage", name = "Sample Gradle Kotlin Assignment No Package",
+                packageName = "", ownerUserId = "teacher1", compiler = Compiler.GRADLE,
+                submissionMethod = SubmissionMethod.UPLOAD, language = Language.KOTLIN,
+                gitRepositoryUrl = "git@github.com:Diogo-a21905661/test-kotlin-gradle-assignment.git",
+                gitRepositoryPrivKey = sampleJavaAssignmentPrivateKey,
+                gitRepositoryPubKey = sampleJavaAssignmentPublicKey,
+                gitRepositoryFolder = "sampleGradleKotlinProjectNoPackage",
+                active = true)
+
+        assignmentService.addTagToAssignment(assignment, "sample")
+        assignmentService.addTagToAssignment(assignment, "gradle")
+        assignmentService.addTagToAssignment(assignment, "kotlin")
+
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleGradleKotlinProjectNoPackage",
+                testClass = "TestTeacherProject", testMethod = "testFindMax"))
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleGradleKotlinProjectNoPackage",
+                testClass = "TestTeacherProject", testMethod = "testFindMaxAllNegative"))
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleGradleKotlinProjectNoPackage",
                 testClass = "TestTeacherProject", testMethod = "testFindMaxNegativeAndPositive"))
 
         val gitRepository = assignment.gitRepositoryUrl
