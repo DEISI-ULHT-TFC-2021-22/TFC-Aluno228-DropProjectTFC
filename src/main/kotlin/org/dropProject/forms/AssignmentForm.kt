@@ -21,7 +21,7 @@ package org.dropProject.forms
 
 import org.dropProject.dao.Assignment
 import org.dropProject.dao.Language
-import org.dropProject.dao.Compiler
+import org.dropProject.dao.Engine
 import org.dropProject.dao.LeaderboardType
 import org.dropProject.dao.TestVisibility
 import org.springframework.format.annotation.DateTimeFormat
@@ -51,9 +51,9 @@ data class AssignmentForm(
 
         var assignmentPackage: String? = null,
 
-        //NEW: Added compiler for the new DP iteration
-        @field:NotNull(message="Error: Compiler must not be empty")
-        var compiler: Compiler? = null,
+        //NEW: Added engine for the new DP iteration
+        @field:NotNull(message="Error: Engine must not be empty")
+        var engine: Engine? = null,
 
         @field:NotNull(message="Error: Language must not be empty")
         var language: Language? = null,

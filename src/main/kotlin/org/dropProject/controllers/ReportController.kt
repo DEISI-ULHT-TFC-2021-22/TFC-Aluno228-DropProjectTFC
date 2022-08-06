@@ -257,8 +257,8 @@ class ReportController(
                         buildReportId ->
                             val buildReportDB = buildReportRepository.getById(buildReportId)
 
-                            //Check for assignment compiler
-                            if (assignment.compiler == Compiler.MAVEN) {
+                            //Check for assignment engine
+                            if (assignment.engine == Engine.MAVEN) {
                                 model["buildReport"] = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                                     mavenizedProjectFolder.absolutePath, assignment, submission)
                             } else {
@@ -580,9 +580,9 @@ class ReportController(
                             submission.getStatus() == SubmissionStatus.VALIDATED_REBUILT)
                     val buildReportDB = buildReportRepository.getById(buildReportId)
 
-                    //Check compiler of assignment
+                    //Check engine of assignment
                     val buildReport: BuildReport
-                    if (assignment.compiler == Compiler.MAVEN) {
+                    if (assignment.engine == Engine.MAVEN) {
                         buildReport = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                             mavenizedProjectFolder.absolutePath, assignment, submission)
                     } else {
@@ -632,9 +632,9 @@ class ReportController(
                         val mavenizedProjectFolder = assignmentTeacherFiles.getProjectFolderAsFile(submission,
                                 submission.getStatus() == SubmissionStatus.VALIDATED_REBUILT)
                         val buildReportDB = buildReportRepository.getById(buildReportId)
-                        //Check assignment compiler
+                        //Check assignment engine
                         val buildReport: BuildReport
-                        if (assignment.compiler == Compiler.MAVEN) {
+                        if (assignment.engine == Engine.MAVEN) {
                             buildReport = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                                 mavenizedProjectFolder.absolutePath, assignment, submission)
                         } else {
@@ -693,9 +693,9 @@ class ReportController(
                     val mavenizedProjectFolder = assignmentTeacherFiles.getProjectFolderAsFile(submission,
                             submission.getStatus() == SubmissionStatus.VALIDATED_REBUILT)
                     val buildReportDB = buildReportRepository.getById(buildReportId)
-                    //Check assignment compiler
+                    //Check assignment engine
                     val buildReport: BuildReport
-                    if (assignment.compiler == Compiler.MAVEN) {
+                    if (assignment.engine == Engine.MAVEN) {
                         buildReport = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                             mavenizedProjectFolder.absolutePath, assignment, submission)
                     } else {

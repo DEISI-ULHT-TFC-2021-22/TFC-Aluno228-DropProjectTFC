@@ -59,15 +59,16 @@
             </div>
         </div>
 
-        <div class="form-group" th:classappend="${#fields.hasErrors('compiler')} ? 'has-error' : ''">
-            <label for="compiler" class="col-sm-3 control-label">Compiler</label>
+        <div class="form-group" th:classappend="${#fields.hasErrors('engine')} ? 'has-error' : ''">
+            <label for="engine" class="col-sm-3 control-label">Engine</label>
             <div class="col-sm-9">
-                <select th:field="*{compiler}" class="form-control" id="compiler">
-                    <option value="MAVEN" th:selected="${assignmentForm.compiler=='MAVEN'}">Maven</option>
-                    <option value="GRADLE" th:selected="${assignmentForm.compiler=='GRADLE'}">Gradle</option>
+                <select th:field="*{engine}" class="form-control" id="engine">
+                    <option value="MAVEN" th:selected="${assignmentForm.engine=='MAVEN'}">Maven</option>
+                    <option value="GRADLE" th:selected="${assignmentForm.engine=='GRADLE'}">Gradle</option>
+                    <option value="ANDROID" th:selected="${assignmentForm.engine=='ANDROID'}">Android</option>
                 </select>
-                <p class="help-block" th:if="${#fields.hasErrors('compiler')}" th:errors="*{compiler}">Error</p>
-                <p class="help-block" th:if="${!#fields.hasErrors('compiler')}" >Submissions will be built/deployed using the chosen compiler</p>
+                <p class="help-block" th:if="${#fields.hasErrors('engine')}" th:errors="*{engine}">Error</p>
+                <p class="help-block" th:if="${!#fields.hasErrors('engine')}" >Submissions will be built/deployed using the chosen engine</p>
             </div>
         </div>
 
@@ -77,7 +78,6 @@
                 <select th:field="*{language}" class="form-control" id="language">
                     <option value="JAVA" th:selected="${assignmentForm.language=='JAVA'}">Java</option>
                     <option value="KOTLIN" th:selected="${assignmentForm.language=='KOTLIN'}">Kotlin</option>
-                    <option value="ANDROID" th:selected="${assignmentForm.language=='ANDROID'}">Android</option>
                 </select>
                 <p class="help-block" th:if="${#fields.hasErrors('language')}" th:errors="*{language}">Error</p>
                 <p class="help-block" th:if="${!#fields.hasErrors('language')}" >Submissions must be implemented using this language</p>

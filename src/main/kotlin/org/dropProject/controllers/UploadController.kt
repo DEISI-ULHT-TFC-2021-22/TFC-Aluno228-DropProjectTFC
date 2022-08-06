@@ -348,7 +348,7 @@ class UploadController(
 
     /**
      * Builds and checks a [Submission].
-     * NEW: Added if conditional to check if either Gradle or Maven were used as compiler
+     * NEW: Added if conditional to check if either Gradle, Maven or Android were used as engine
      * @property projectFolder is a File
      * @property assignment is the [Assignment] for which the submission is being made
      * @property authorsStr is a String
@@ -383,12 +383,7 @@ class UploadController(
 
             //Standardize project
             val standardizedProjectFolder = standardizeFolder(projectFolder, submission, assignment, teacherRebuild)
-            if (assignment.compiler == Compiler.MAVEN) {
-                LOG.info("[${authorsStr}] Mavenized to folder ${standardizedProjectFolder}")
-            } else {
-                LOG.info("[${authorsStr}] used Gradle on folder ${standardizedProjectFolder}")
-
-            }
+            LOG.info("[${authorsStr}] standardized to folder ${standardizedProjectFolder}")
     
             if (asyncExecutor is ThreadPoolTaskScheduler) {
                 LOG.info("asyncExecutor.activeCount = ${asyncExecutor.activeCount}")
@@ -433,8 +428,8 @@ class UploadController(
             }
         }
 
-        //Check for compiler used
-        if (assignment.compiler == Compiler.GRADLE) { //compiler is gradle
+        //Check for engine used
+        if (assignment.engine == Engine.GRADLE) { //engine is gradle
             //Check if main exists
             if (!File(projectFolder, "src/main").existsCaseSensitive()) { //main doesnt exist
                 if (!File(projectFolder, "src/${packageName}/${mainFile}").existsCaseSensitive()) {
@@ -449,7 +444,7 @@ class UploadController(
                     erros.add("O projecto não contém o ficheiro ${mainFile}, suposto estar na pasta 'src/main/${mainLanguage}/${packageName}/${mainFile}'")
                 } 
             }
-        } else { //compiler is maven
+        } else { //engine is maven
             if (!File(projectFolder, "src/${packageName}/${mainFile}").existsCaseSensitive()) {
                 erros.add("O projecto não contém o ficheiro ${mainFile} na pasta 'src/${packageName}'")
             }
@@ -471,7 +466,7 @@ class UploadController(
     }
 
     /**
-     * Transforms a student's submission/code from its original structure to a structure that respects the standard for the compiler (Maven or Gradle)
+     * Transforms a student's submission/code from its original structure to a structure that respects the standard for the engine (Maven, Gradle or Android)
      * expected format.
      * @param projectFolder is a file
      * @param submission is a Submission
@@ -482,22 +477,26 @@ class UploadController(
         val newProjectFolder = assignmentTeacherFiles.getProjectFolderAsFile(submission, teacherRebuild)
         val folder = if (assignment.language == Language.JAVA) "java" else "kotlin"
 
+        LOG.info("---------------------------------------------------------------------")
+        LOG.info("Submission Folder (ProjectFolder) == ${projectFolder}")
+        LOG.info("Standardized Project Folder (NewProjectFolder) == ${newProjectFolder}")
+        LOG.info("---------------------------------------------------------------------")
+
         //Delete submission folder recursively
         newProjectFolder.deleteRecursively()
 
         // first copy the project files submitted by the students (main)
-        //check if project folder has main as first and language as second
-        if (File(projectFolder, "src/main").exists() && File(projectFolder, "src/main/${folder}").exists()) {
+        if (File(projectFolder, "src").exists() && File(projectFolder, "src/main").exists()) {
             FileUtils.copyDirectory(File(projectFolder, "src/main/${folder}"), File(newProjectFolder, "src/main/${folder}")) {
-            it.isDirectory || (it.isFile() && !it.name.startsWith("Test")) // exclude TestXXX classes
+                it.isDirectory || (it.isFile() && !it.name.startsWith("Test")) // exclude TestXXX classes
             }
         } else {
             FileUtils.copyDirectory(File(projectFolder, "src"), File(newProjectFolder, "src/main/${folder}")) {
-            it.isDirectory || (it.isFile() && !it.name.startsWith("Test")) // exclude TestXXX classes
+                it.isDirectory || (it.isFile() && !it.name.startsWith("Test")) // exclude TestXXX classes
             }
         }
 
-        // first copy the project files submitted by the students (test)
+        // first copy the project files submitted by the students (student tests)
         if (assignment.acceptsStudentTests) {
             FileUtils.copyDirectory(File(projectFolder, "src"), File(newProjectFolder, "src/test/${folder}")) {
                 it.isDirectory || (it.isFile() && it.name.startsWith("Test")) // include TestXXX classes
@@ -529,6 +528,7 @@ class UploadController(
             projectFolder.deleteRecursively()
         }
 
+        LOG.info("Standardized to ${newProjectFolder}")
         return newProjectFolder
     }
 

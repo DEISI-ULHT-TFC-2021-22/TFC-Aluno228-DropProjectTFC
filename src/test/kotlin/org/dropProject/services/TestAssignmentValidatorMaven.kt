@@ -45,7 +45,7 @@ class TestAssignmentValidatorMaven {
     val sampleAssignmentsRootFolder = "src/test/sampleAssignments"
 
     val dummyAssignment = Assignment(id = "dummy", name = "", gitRepositoryUrl = "",
-            gitRepositoryFolder = "", ownerUserId = "p4997", submissionMethod = SubmissionMethod.UPLOAD, compiler = Compiler.MAVEN,
+            gitRepositoryFolder = "", ownerUserId = "p4997", submissionMethod = SubmissionMethod.UPLOAD, engine = Engine.MAVEN,
             hiddenTestsVisibility = TestVisibility.HIDE_EVERYTHING)
 
     @Before

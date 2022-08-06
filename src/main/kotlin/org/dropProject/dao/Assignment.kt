@@ -30,17 +30,17 @@ import javax.persistence.*
 val formatter = "dd MMM HH:mm"
 
 /**
- * NEW: Enum representing the compiler that Drop Project supports.
+ * NEW: Enum representing the engine that Drop Project supports.
  */
-enum class Compiler {
-    MAVEN, GRADLE
+enum class Engine {
+    MAVEN, GRADLE, ANDROID
 }
 
 /**
  * NEW: Enum representing the programming languages that Drop Project supports.
  */
 enum class Language {
-    JAVA, KOTLIN, ANDROID
+    JAVA, KOTLIN
 }
 
 /**
@@ -73,8 +73,8 @@ enum class LeaderboardType {
  * placed in this package)
  * @property dueDate is an optional [LocalDateTime] with the submission deadline
  * @property submissionMethod is a [SubmissionMethod]
- * @property compiler is the [Compiler] that the code will be compiled with and can be either MAVEN or GRADLE
- * @property language is the programming [Language] that the programming language that the submissions should be written in
+ * @property engine is the [Engine] that the code will be compiled with and can be either MAVEN, GRADLE or ANDROID
+ * @property language is the programming [Language] that the programming language that the submissions will be written in
  * @property acceptsStudentTests is a Boolean, indicating if the students are allowed to submit their own unit tests
  * @property minStudentTests is an optional Integer, indicating the minimum number of unit tests that students are
  * asked to implement
@@ -116,11 +116,10 @@ data class Assignment(
         var submissionMethod: SubmissionMethod,
 
         /**
-        * NEW: Changed variables of new Drop Project implementation
-        * Might remove compiler depending if language works without it
+        * NEW: Changed variables of new Drop Project implementation (engine)
         */
         @Column(nullable = false)
-        var compiler: Compiler = Compiler.MAVEN,
+        var engine: Engine = Engine.MAVEN,
         @Column(nullable = false)
         var language: Language = Language.JAVA,
 

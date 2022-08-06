@@ -22,7 +22,7 @@ package org.dropProject.data
 import org.dropProject.dao.Assignment
 import org.dropProject.dao.AssignmentTestMethod
 import org.dropProject.dao.Language
-import org.dropProject.dao.Compiler
+import org.dropProject.dao.Engine
 import org.dropProject.services.JUnitMethodResult
 import org.dropProject.services.JUnitMethodResultType
 import org.dropProject.services.JUnitResults
@@ -73,8 +73,6 @@ class BuildReportMaven(outputLines: List<String>,
         LOG.info("Started checking Maven compilation errors for project.")
 
         var errors = ArrayList<String>()
-
-        /* Android is still in Kotlin */
         val folder = if (assignment.language == Language.JAVA) "java" else "kotlin"
 
         // parse compilation errors
@@ -144,9 +142,8 @@ class BuildReportMaven(outputLines: List<String>,
            when (assignment.language) {
                Language.JAVA -> errors.add("Invalid call to System.exit(). Please remove this instruction")
                Language.KOTLIN ->  errors.add("Invalid call to System.exit() or exitProcess(). Please remove this instruction")
-               Language.ANDROID ->  errors.add("Invalid call to System.exit() or exitProcess(). Please remove this instruction")
             }
-            }
+        }
 
         LOG.info("Finished checking for build errors -> ${errors}")
 
@@ -166,16 +163,6 @@ class BuildReportMaven(outputLines: List<String>,
                 return false
             }
             Language.KOTLIN -> {
-                for (outputLine in outputLines) {
-                    if (outputLine.startsWith("[INFO] --- detekt-maven-plugin")) {
-                        return true
-                    }
-                }
-
-                return false
-            }
-            //NEW: Added the case for ANDROID language (same as the KOTLIN variant)
-             Language.ANDROID -> {
                 for (outputLine in outputLines) {
                     if (outputLine.startsWith("[INFO] --- detekt-maven-plugin")) {
                         return true
@@ -220,36 +207,6 @@ class BuildReportMaven(outputLines: List<String>,
             }
 
             Language.KOTLIN -> {
-                var startIdx = -1;
-                var endIdx = -1;
-                for ((idx, outputLine) in outputLines.withIndex()) {
-                    if (outputLine.startsWith("[INFO] --- detekt-maven-plugin")) {
-                        startIdx = idx + 1
-                    }
-                    // depending on the detekt-maven-plugin version, the output is different
-                    if (startIdx > 0 &&
-                            idx > startIdx + 1 &&
-                            (outputLine.startsWith("detekt finished") || outputLine.startsWith("[INFO]"))) {
-                        endIdx = idx
-                        break
-                    }
-                }
-
-                if (startIdx > 0) {
-                    return outputLines
-                            .subList(startIdx, endIdx)
-                            .filter { it.startsWith("\t") && !it.startsWith("\t-") }
-                            .map { it.replace("\t", "") }
-                            .map { it.replace("${projectFolder}/src/main/${folder}/", "") }
-                            .map { translateDetektError(it) }
-                            .distinct()
-                } else {
-                    return emptyList()
-                }
-            }
-
-            //NEW: Added verifier for ANDROID language build in function (same as KOTLIN)
-            Language.ANDROID -> {
                 var startIdx = -1;
                 var endIdx = -1;
                 for ((idx, outputLine) in outputLines.withIndex()) {

@@ -80,7 +80,7 @@ class SubmissionService(
                             lastSubmission.getStatus() == SubmissionStatus.VALIDATED_REBUILT)
                     val buildReportDB = buildReportRepository.getById(buildReportId)
                     val buildReport: BuildReport
-                    if (assignment.compiler == Compiler.MAVEN) {
+                    if (assignment.engine == Engine.MAVEN) {
                         buildReport = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                             mavenizedProjectFolder.absolutePath, assignment, lastSubmission)
                     } else {

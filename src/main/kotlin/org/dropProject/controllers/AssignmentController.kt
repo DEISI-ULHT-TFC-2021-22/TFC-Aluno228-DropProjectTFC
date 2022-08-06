@@ -136,13 +136,6 @@ class AssignmentController(
 
         var mustSetupGitConnection = false
 
-        //NEW: Check if compiler Maven is not used with Android language (ERROR REPLY)
-        if (assignmentForm.language == Language.ANDROID && assignmentForm.compiler == Compiler.MAVEN) {
-            LOG.warn("Error: Compiler Maven cannot be used with Android language")
-            bindingResult.rejectValue("compiler", "compiler.check", "Error: Compiler Maven cannot be used with Android language")
-            return "assignment-form"
-        }
-
         if (assignmentForm.acceptsStudentTests &&
                 (assignmentForm.minStudentTests == null || assignmentForm.minStudentTests!! < 1)) {
             LOG.warn("Error: You must require at least one student test")
@@ -298,11 +291,11 @@ class AssignmentController(
      * @param assignmentForm, the AssignmentForm from which the Assignment contents will be copied
      * @param principal is a [Principal] representing the user making the request
      * @return the created Assignment
-     * NEW: Added [Compiler] onto the function of creating assignment form
+     * NEW: Added [Engine] onto the function of creating assignment form
      */
     private fun createAssignmentBasedOnForm(assignmentForm: AssignmentForm, principal: Principal): Assignment {
         val newAssignment = Assignment(id = assignmentForm.assignmentId!!, name = assignmentForm.assignmentName!!,
-                packageName = assignmentForm.assignmentPackage, compiler = assignmentForm.compiler!!, language = assignmentForm.language!!,
+                packageName = assignmentForm.assignmentPackage, engine = assignmentForm.engine!!, language = assignmentForm.language!!,
                 dueDate = if (assignmentForm.dueDate != null) java.sql.Timestamp.valueOf(assignmentForm.dueDate) else null,
                 acceptsStudentTests = assignmentForm.acceptsStudentTests,
                 minStudentTests = assignmentForm.minStudentTests,
@@ -410,15 +403,15 @@ class AssignmentController(
      * @param assignment is the Assignment with the information to place in the form
      * @param acl is a List of [AssignmentACL], containing the user's that have access to the repository
      * @return The created AssignmentForm
-     * NEW: Added [Compiler] onto the function of creating assignment form
+     * NEW: Added [Engine] onto the function of creating assignment form
      */
     private fun createAssignmentFormBasedOnAssignment(assignment: Assignment, acl: List<AssignmentACL>): AssignmentForm {
-        //NEW: Added compiler variable to assignment form
+        //NEW: Added engine variable to assignment form
         val assignmentForm = AssignmentForm(assignmentId = assignment.id,
                 assignmentName = assignment.name,
                 assignmentTags = assignment.tagsStr?.joinToString(),
                 assignmentPackage = assignment.packageName,
-                compiler = assignment.compiler,
+                engine = assignment.engine,
                 language = assignment.language,
                 dueDate = assignment.dueDate?.toInstant()?.atZone(ZoneId.systemDefault())?.toLocalDateTime(),
                 submissionMethod = assignment.submissionMethod,

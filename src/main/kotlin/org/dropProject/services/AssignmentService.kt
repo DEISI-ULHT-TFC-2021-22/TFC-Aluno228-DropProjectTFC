@@ -313,7 +313,7 @@ class AssignmentService(
     fun updateAssignment(existingAssignment: Assignment, assignmentForm: AssignmentForm) {
         existingAssignment.name = assignmentForm.assignmentName!!
         existingAssignment.packageName = assignmentForm.assignmentPackage
-        existingAssignment.compiler = assignmentForm.compiler!! //NEW: Added compiler to new DP iteration
+        existingAssignment.engine = assignmentForm.engine!! //NEW: Added engine to new DP iteration
         existingAssignment.language = assignmentForm.language!!
         existingAssignment.dueDate = if (assignmentForm.dueDate != null) java.sql.Timestamp.valueOf(assignmentForm.dueDate) else null
         existingAssignment.submissionMethod = assignmentForm.submissionMethod!!

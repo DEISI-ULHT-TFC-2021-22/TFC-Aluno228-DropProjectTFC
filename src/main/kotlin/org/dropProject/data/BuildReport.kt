@@ -22,7 +22,7 @@ package org.dropProject.data
 import org.dropProject.dao.Assignment
 import org.dropProject.dao.AssignmentTestMethod
 import org.dropProject.dao.Language
-import org.dropProject.dao.Compiler
+import org.dropProject.dao.Engine
 import org.dropProject.services.JUnitMethodResult
 import org.dropProject.services.JUnitMethodResultType
 import org.dropProject.services.JUnitResults

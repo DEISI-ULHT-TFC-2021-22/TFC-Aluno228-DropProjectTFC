@@ -64,7 +64,7 @@ class BuildWorker(
     val LOG = LoggerFactory.getLogger(this.javaClass.name)
 
     /**
-     * NEW: Added Gradle compiler to the build worker
+     * NEW: Added Gradle and Android engine to the build worker
      * Checks a [Submission], performing all relevant build and evaluation steps (for example, Compilation) and storing
      * each step's results in the database.
      * Only used for Submission
@@ -83,28 +83,40 @@ class BuildWorker(
         val assignment = assignmentRepository.findById(submission.assignmentId).orElse(null)
         val realPrincipalName = if (rebuildByTeacher) submission.submitterUserId else principalName
 
-        //NEW: Added condition to check if either Maven or Gradle are used
+        //NEW: Added condition to check if either Maven, Gradle or Android are used
         var result: Result = Result()
-        if (assignment.compiler == Compiler.MAVEN) {
+        if (assignment.engine == Engine.MAVEN) {
             if (assignment.maxMemoryMb != null) {
                 LOG.info("[${authorsStr}] Started maven invocation (max: ${assignment.maxMemoryMb}Mb)")
             } else {
                 LOG.info("[${authorsStr}] Started maven invocation")
             }
 
-            //Run invoker of compiler (clean, compile, test)
+            //Run invoker of engine (clean, compile, test)
             result = mavenInvoker.run(projectFolder, realPrincipalName, assignment.maxMemoryMb)
 
             //Create build report for Maven
             buildMaven(result, assignment, submission, projectFolder, realPrincipalName, dontChangeStatusDate, rebuildByTeacher)
-        } else { //Assignment type is Gradle
+        } else if (assignment.engine == Engine.GRADLE) { //Assignment engine is Gradle
             if (assignment.maxMemoryMb != null) {
                 LOG.info("[${authorsStr}] Started gradle invocation (max: ${assignment.maxMemoryMb}Mb)")
             } else {
                 LOG.info("[${authorsStr}] Started gradle invocation")
             }
 
-            //Run invoker of compiler (clean, compile, test)
+            //Run invoker of engine (clean, compile, test)
+            result = gradleInvoker.run(projectFolder, realPrincipalName, assignment)
+
+            //Create build report for Gradle
+            buildGradle(result, assignment, submission, projectFolder, realPrincipalName, dontChangeStatusDate, rebuildByTeacher)
+        } else if (assignment.engine == Engine.ANDROID) { //Assignment engine is Android
+            if (assignment.maxMemoryMb != null) {
+                LOG.info("[${authorsStr}] Started gradle invocation (max: ${assignment.maxMemoryMb}Mb)")
+            } else {
+                LOG.info("[${authorsStr}] Started gradle invocation")
+            }
+
+            //Run invoker of engine (clean, compile, test)
             result = gradleInvoker.run(projectFolder, realPrincipalName, assignment)
 
             //Create build report for Gradle
@@ -209,8 +221,8 @@ class BuildWorker(
                             jUnitReportRepository.save(report)
                         }
 
-                //NEW: Added verification for compiler Maven to make sure no errors happen in test coverage
-                if (assignment.compiler == Compiler.MAVEN && assignment.calculateStudentTestsCoverage && hasCoverageReport(projectFolder)) {
+                //NEW: Added verification for engine Maven to make sure no errors happen in test coverage
+                if (assignment.engine == Engine.MAVEN && assignment.calculateStudentTestsCoverage && hasCoverageReport(projectFolder)) {
 
                     // this may seem stupid but I have to rename TestTeacher files to something that will make junit ignore them,
                     // then invoke maven again, so that the coverage report is based
@@ -389,10 +401,10 @@ class BuildWorker(
      * @return a [BuildReport] or null
      */
     fun checkAssignment(assignmentFolder: File, assignment: Assignment, principalName: String?) : BuildReport? {
-        LOG.info("Compiler used for assignment ${assignment.id} is ${assignment.compiler}.")
+        LOG.info("Engine used for assignment ${assignment.id} is ${assignment.engine}.")
         LOG.info("Programming language used for assignment ${assignment.id} is ${assignment.language}.")
         
-        if (assignment.compiler == Compiler.MAVEN) {
+        if (assignment.engine == Engine.MAVEN) {
             val mavenResult = mavenInvoker.run(assignmentFolder, principalName, assignment.maxMemoryMb)
             if (!mavenResult.expiredByTimeout) {
                 LOG.info("Maven invoker OK for ${assignment.id}")
@@ -400,7 +412,16 @@ class BuildWorker(
             } else {
                 LOG.info("Maven invoker aborted by timeout for ${assignment.id}")
             }
-        } else if (assignment.compiler == Compiler.GRADLE) { //Assignment is Gradle
+        } else if (assignment.engine == Engine.GRADLE) { //Assignment is Gradle
+            val gradleResult = gradleInvoker.run(assignmentFolder, principalName, assignment)
+            if (!gradleResult.expiredByTimeout) {
+                LOG.info("Gradle invoker OK for ${assignment.id}")
+
+                return buildReportBuilderGradle.build(gradleResult.outputLines, assignmentFolder.absolutePath, assignment)
+            } else {
+                LOG.info("Gradle invoker aborted by timeout for ${assignment.id}")
+            }
+        } else if (assignment.engine == Engine.ANDROID) { //Assignment is Android
             val gradleResult = gradleInvoker.run(assignmentFolder, principalName, assignment)
             if (!gradleResult.expiredByTimeout) {
                 LOG.info("Gradle invoker OK for ${assignment.id}")

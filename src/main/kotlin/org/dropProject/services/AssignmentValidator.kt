@@ -57,7 +57,7 @@ abstract class AssignmentValidator {
 
     /**
      * Picks between which [Assignment] validator we will be using.
-     * That depends on which compiler is being used
+     * That depends on which engine is being used
      *
      * @param assignmentFolder is a File, representing the file system folder where the assignment's code is stored
      * @param assignment is the Assignment to validate

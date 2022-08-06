@@ -74,6 +74,7 @@ class AssignmentTeacherFiles(val buildWorker: BuildWorker,
 
         val rootFolder = File(assignmentsRootLocation, assignment.gitRepositoryFolder)
         FileUtils.copyDirectory(rootFolder, mavenizedProjectFolder) {
+            LOG.info("It Folder Path == ${it}")
             !it.absolutePath.startsWith("${rootFolder.absolutePath}/src/main") &&
                     !it.absolutePath.startsWith("${rootFolder.absolutePath}/.git") &&
                     !it.absolutePath.startsWith("${rootFolder.absolutePath}/target")
@@ -117,10 +118,12 @@ class AssignmentTeacherFiles(val buildWorker: BuildWorker,
     fun checkAssignmentFiles(assignment: Assignment, principal: Principal?): List<AssignmentValidator.Info> {
         val assignmentFolder = File(assignmentsRootLocation, assignment.gitRepositoryFolder)
 
-        //Use the validator depending on the compiler
+        //Use the validator depending on the engine
         val assignmentValidator: AssignmentValidator
-        if (assignment.compiler == Compiler.MAVEN) {
+        if (assignment.engine == Engine.MAVEN) {
             assignmentValidator = applicationContext.getBean(AssignmentValidatorMaven::class.java)
+        } else if (assignment.engine == Engine.GRADLE) {
+            assignmentValidator = applicationContext.getBean(AssignmentValidatorGradle::class.java)
         } else {
             assignmentValidator = applicationContext.getBean(AssignmentValidatorGradle::class.java)
         }
@@ -144,7 +147,7 @@ class AssignmentTeacherFiles(val buildWorker: BuildWorker,
             return report
         }
 
-        //Check for compiler used
+        //Check for engine used
         val buildReportDB: BuildReport = buildReportRepository.save(BuildReport(buildReport = buildReport.getOutput()))
         assignment.buildReportId = buildReportDB.id
 
