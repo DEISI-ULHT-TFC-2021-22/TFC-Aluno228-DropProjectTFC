@@ -1,5 +1,5 @@
 site:
-  baseUrl: 'https://drop-project-edu.github.io/drop-project'
+  baseUrl: 'https://Diogo-a21905661.github.io/drop-project-tfc'
   about:
     siteName: Drop Project
     siteDescription:
@@ -7,7 +7,7 @@ site:
 Editorial:
   primaryColor: '#DE9149'
   social:
-    github: 'drop-project-edu/drop-project'
+    github: 'Diogo-a21905661/drop-project-tfc'
   menu:
     - type: 'separator'
       title: 'Wiki'

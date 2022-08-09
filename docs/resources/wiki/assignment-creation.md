@@ -1,6 +1,6 @@
 This tutorial explains how a teacher can create a new Assignment in Drop Project.
 
-The first step is to create a git repository with the correct structure. The easiest way to do this is to clone one of the the following repositories:
+The first step is to create a git repository with the correct structure. The easiest way to do this is to clone one of the the following repositories. These work for Maven and are the samples used in Drop Project:
 
 https://github.com/drop-project-edu/sampleJavaAssignment
 
