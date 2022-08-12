@@ -64,7 +64,6 @@ class BuildWorker(
     val LOG = LoggerFactory.getLogger(this.javaClass.name)
 
     /**
-     * NEW: Added Gradle and Android engine to the build worker
      * Checks a [Submission], performing all relevant build and evaluation steps (for example, Compilation) and storing
      * each step's results in the database.
      * Only used for Submission

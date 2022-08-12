@@ -36,7 +36,7 @@ import org.gradle.tooling.*
  * Utility to perform Gradle related tasks.
  */
 @Service
-public class GradleInvoker {    
+class GradleInvoker {    
     val LOG = LoggerFactory.getLogger(this.javaClass.name)
 
     var securityManagerEnabled = true
@@ -94,7 +94,7 @@ public class GradleInvoker {
             //if you want to listen to the progress events: 
             //TO DO: Still need to compile submission tests against actual assignment tests
             build.addProgressListener(ProgressListener {
-                //LOG.info("progress ${it.description}")
+                LOG.info("progress ${it.description}")
                 exitLines.add(it.description)
             })
 

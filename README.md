@@ -35,7 +35,7 @@ Gradle Assignment (Kotlin): https://github.com/Diogo-a21905661/test-kotlin-gradl
 
 Gradle Assignment (Java): https://github.com/Diogo-a21905661/test-java-gradle-assignment
 
-Submission (usable in both Maven and Gradle): https://github.com/Diogo-a21905661/test-kotlin-submission
+Kotlin Submission (usable in both Maven and Gradle): https://github.com/Diogo-a21905661/test-kotlin-submission
 
 ## Description
 
@@ -64,10 +64,10 @@ Several checks are performed on each project:
 
 ## How does it work?
 
-Most of the work is done by a Maven Invoker, running several goals on the project.
+Most of the work is done either by a Maven Invoker or a Gradle Invoker, running several goals on the project.
 The results are collected into a report that is viewable by the student and the teacher.
 
-Projects must not be maven projects because they are "mavenized" by the server, after uploading.
+Projects must not be maven projects because they are "mavenized" by the server, after uploading. They can be gradle projects as they are checked for during compilation.
 In this context, "mavenizing", means copying the files into a proper Maven folder structure (e.g. putting the sources
 into `/src/main/java`), mixing the student files with the teacher unit tests and adding a `pom.xml`
 (also provided by the teacher).
