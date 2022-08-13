@@ -99,9 +99,9 @@ class GradleInvoker {
             })
 
             //kick the build off
-            LOG.info("Before gradle clean. build, test...")
+            LOG.info("Before gradle clean, build, test...")
             build.run()
-            LOG.info("After gradle clean. build, test!")
+            LOG.info("After gradle clean, build, test!")
         } catch (ex: Exception) {
             ex.printStackTrace()
             LOG.error(ex.localizedMessage)
