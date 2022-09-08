@@ -92,7 +92,6 @@ class GradleInvoker {
             */
 
             //if you want to listen to the progress events: 
-            //TO DO: Still need to compile submission tests against actual assignment tests
             build.addProgressListener(ProgressListener {
                 LOG.info("progress ${it.description}")
                 exitLines.add(it.description)

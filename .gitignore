@@ -6,3 +6,8 @@ mavenized-projects-test
 mavenized-projects
 *.zip
 assignments
+.assignments
+submissions
+.submissions
+mavenized-projects
+.mavenized-projects

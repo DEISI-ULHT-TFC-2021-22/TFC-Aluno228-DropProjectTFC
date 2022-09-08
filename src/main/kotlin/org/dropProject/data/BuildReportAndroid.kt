@@ -42,7 +42,7 @@ import java.math.BigDecimal
  * @property jacocoResults is a List of [JacocoResults] with the result of evaluating the Submission's code coverage
  * @property assignmentTestMethods is a List of [AssignmentTestMethod]. Each object describes on of the executed Unit Tests
  */
-class BuildReportGradle(outputLines: List<String>,
+class BuildReportAndroid(outputLines: List<String>,
                        projectFolder: String,
                        assignment: Assignment,
                        junitResults: List<JUnitResults>,
@@ -79,6 +79,7 @@ class BuildReportGradle(outputLines: List<String>,
         var errors = ArrayList<String>()
         //errors.add("Test of error")
 
+        /* Android is still in Kotlin */
         val folder = if (assignment.language == Language.JAVA) "java" else "kotlin"
 
         /*

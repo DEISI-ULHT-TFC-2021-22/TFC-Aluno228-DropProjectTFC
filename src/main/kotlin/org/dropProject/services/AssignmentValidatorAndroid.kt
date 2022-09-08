@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory
  */
 @Service
 @Scope("prototype")
-class AssignmentValidatorGradle : AssignmentValidator() {
+class AssignmentValidatorAndroid : AssignmentValidator() {
 
     val LOG = LoggerFactory.getLogger(this.javaClass.name)
 
@@ -58,8 +58,8 @@ class AssignmentValidatorGradle : AssignmentValidator() {
     override fun validate(assignmentFolder: File, assignment: Assignment) {
         val gradleFileKotlin = File(assignmentFolder, "build.gradle.kts")
         val gradleFileGroovy = File(assignmentFolder, "build.gradle")
-    
-        //Check if build.gradle exists (check for one)
+
+        //Check if build.gradle exists (one of them)
         if (!gradleFileGroovy.exists() && !gradleFileKotlin.exists()) {
             report.add(Info(InfoType.ERROR, "Assignment must have a build.gradle file.",
             "Check <a href=\"https://github.com/Diogo-a21905661/test-kotlin-gradle-assignment\">" +
@@ -71,7 +71,7 @@ class AssignmentValidatorGradle : AssignmentValidator() {
 
         val wrapper = File(assignmentFolder, "gradlew")
         val wrapperBat = File(assignmentFolder, "gradlew.bat")
-
+    
         //Check if gradle wrapper exists
         if (!wrapper.exists() || !wrapperBat.exists()) {
             report.add(Info(InfoType.ERROR, "Assignment must have a gradlew file.",
@@ -86,7 +86,7 @@ class AssignmentValidatorGradle : AssignmentValidator() {
         val wrapperProperties = File(assignmentFolder, "gradle/wrapper/gradle-wrapper.properties")
 
         //Check if properties exist
-        if (!gradleProperties.exists() || !wrapperProperties.exists()) {
+        if (!gradleProperties.exists()) {
             report.add(Info(InfoType.ERROR, "Assignment must have a gradle.properties file.",
             "Check <a href=\"https://github.com/Diogo-a21905661/test-kotlin-gradle-assignment\">" +
                     "https://github.com/Diogo-a21905661/test-kotlin-gradle-assignment</a> for an example"))
@@ -162,6 +162,7 @@ class AssignmentValidatorGradle : AssignmentValidator() {
                         }
                     }
                 }
+
 
                 if (invalidTestMethods + validTestMethods == 0) {
                     report.add(Info(InfoType.WARNING, "You haven't defined any test methods.", "Use the @Test(timeout=xxx) annotation to mark test methods."))

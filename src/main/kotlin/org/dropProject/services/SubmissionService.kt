@@ -42,7 +42,8 @@ class SubmissionService(
         val buildReportRepository: BuildReportRepository,
         val assignmentTeacherFiles: AssignmentTeacherFiles,
         val buildReportBuilderMaven: BuildReportBuilderMaven,
-        val buildReportBuilderGradle: BuildReportBuilderGradle) {
+        val buildReportBuilderGradle: BuildReportBuilderGradle,
+        val buildReportBuilderAndroid: BuildReportBuilderAndroid) {
 
     /**
      * Returns all the SubmissionInfo objects related with [assignment].
@@ -83,8 +84,11 @@ class SubmissionService(
                     if (assignment.engine == Engine.MAVEN) {
                         buildReport = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                             mavenizedProjectFolder.absolutePath, assignment, lastSubmission)
-                    } else {
+                    } else if (assignment.engine == Engine.GRADLE) {
                         buildReport = buildReportBuilderGradle.build(buildReportDB.buildReport.split("\n"),
+                            mavenizedProjectFolder.absolutePath, assignment, lastSubmission)
+                    } else { //engine is Android
+                        buildReport = buildReportBuilderAndroid.build(buildReportDB.buildReport.split("\n"),
                             mavenizedProjectFolder.absolutePath, assignment, lastSubmission)
                     }
                     lastSubmission.ellapsed = buildReport.elapsedTimeJUnit()

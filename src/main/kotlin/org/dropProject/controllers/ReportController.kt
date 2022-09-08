@@ -82,6 +82,7 @@ class ReportController(
         val assignmentTeacherFiles: AssignmentTeacherFiles,
         val buildReportBuilderMaven: BuildReportBuilderMaven,
         val buildReportBuilderGradle: BuildReportBuilderGradle,
+        val buildReportBuilderAndroid: BuildReportBuilderAndroid,
         val gitClient: GitClient,
         val submissionService: SubmissionService,
         val storageService: StorageService,
@@ -261,8 +262,11 @@ class ReportController(
                             if (assignment.engine == Engine.MAVEN) {
                                 model["buildReport"] = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                                     mavenizedProjectFolder.absolutePath, assignment, submission)
-                            } else {
+                            } else if (assignment.engine == Engine.GRADLE) {
                                 model["buildReport"] = buildReportBuilderGradle.build(buildReportDB.buildReport.split("\n"),
+                                    mavenizedProjectFolder.absolutePath, assignment, submission)
+                            } else {
+                                model["buildReport"] = buildReportBuilderAndroid.build(buildReportDB.buildReport.split("\n"),
                                     mavenizedProjectFolder.absolutePath, assignment, submission)
                             }
                     }
@@ -585,8 +589,11 @@ class ReportController(
                     if (assignment.engine == Engine.MAVEN) {
                         buildReport = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                             mavenizedProjectFolder.absolutePath, assignment, submission)
-                    } else {
+                    } else if (assignment.engine == Engine.GRADLE) {
                         buildReport = buildReportBuilderGradle.build(buildReportDB.buildReport.split("\n"),
+                            mavenizedProjectFolder.absolutePath, assignment, submission)
+                    } else {
+                        buildReport = buildReportBuilderAndroid.build(buildReportDB.buildReport.split("\n"),
                             mavenizedProjectFolder.absolutePath, assignment, submission)
                     }
                     submission.ellapsed = buildReport.elapsedTimeJUnit()
@@ -637,8 +644,11 @@ class ReportController(
                         if (assignment.engine == Engine.MAVEN) {
                             buildReport = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                                 mavenizedProjectFolder.absolutePath, assignment, submission)
-                        } else {
+                        } else if (assignment.engine == Engine.GRADLE) {
                             buildReport = buildReportBuilderGradle.build(buildReportDB.buildReport.split("\n"),
+                                mavenizedProjectFolder.absolutePath, assignment, submission)
+                        } else {
+                            buildReport = buildReportBuilderAndroid.build(buildReportDB.buildReport.split("\n"),
                                 mavenizedProjectFolder.absolutePath, assignment, submission)
                         }
                         submission.ellapsed = buildReport.elapsedTimeJUnit()
@@ -698,8 +708,11 @@ class ReportController(
                     if (assignment.engine == Engine.MAVEN) {
                         buildReport = buildReportBuilderMaven.build(buildReportDB.buildReport.split("\n"),
                             mavenizedProjectFolder.absolutePath, assignment, submission)
-                    } else {
+                    } else if (assignment.engine == Engine.GRADLE) {
                         buildReport = buildReportBuilderGradle.build(buildReportDB.buildReport.split("\n"),
+                            mavenizedProjectFolder.absolutePath, assignment, submission)
+                    } else {
+                        buildReport = buildReportBuilderAndroid.build(buildReportDB.buildReport.split("\n"),
                             mavenizedProjectFolder.absolutePath, assignment, submission)
                     }
                     submission.ellapsed = buildReport.elapsedTimeJUnit()

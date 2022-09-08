@@ -100,6 +100,9 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
     @Value("\${dropProject.maven.repository}")
     val mavenRepository : String = ""
 
+    @Value("\${dropProject.android.home}")
+    val androidHome : String = ""
+
     @Value("\${assignments.rootLocation}")
     val assignmentsRootLocation: String = ""
 
@@ -128,7 +131,7 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
             createAndPopulateSampleMavenJavaAssignment()
             createAndPopulateSampleMavenKotlinAssignment()
             createAndPopulateSampleGradleKotlinAssignment()
-            createAndPopulateSampleGradleKotlinAssignmentNoPackage()
+            createAndPopulateSampleAndroidKotlinAssignment()
         }
     }
 
@@ -180,7 +183,6 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
         }
 
         if (connected) {
-
             val author = Author(name = "Student 1", userId = "student1")
             authorRepository.save(author)
 
@@ -297,26 +299,26 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
         }
     }
 
-    //Temporary function for testing
-    private fun createAndPopulateSampleGradleKotlinAssignmentNoPackage() {
-        val assignment = Assignment(id = "sampleGradleKotlinProjectNoPackage", name = "Sample Gradle Kotlin Assignment No Package",
-                packageName = "", ownerUserId = "teacher1", engine = Engine.GRADLE,
+     //Create sample Android assignment for Gradle
+     private fun createAndPopulateSampleAndroidKotlinAssignment() {
+        val assignment = Assignment(id = "sampleAndroidKotlinProject", name = "Sample Android Kotlin Assignment",
+                packageName = "org.dropProject.samples.sampleKotlinAssignment", ownerUserId = "teacher1", engine = Engine.ANDROID,
                 submissionMethod = SubmissionMethod.UPLOAD, language = Language.KOTLIN,
-                gitRepositoryUrl = "git@github.com:Diogo-a21905661/test-kotlin-gradle-assignment.git",
+                gitRepositoryUrl = "git@github.com:Diogo-a21905661/test-kotlin-android-assignment.git",
                 gitRepositoryPrivKey = sampleJavaAssignmentPrivateKey,
                 gitRepositoryPubKey = sampleJavaAssignmentPublicKey,
-                gitRepositoryFolder = "sampleGradleKotlinProjectNoPackage",
+                gitRepositoryFolder = "sampleAndroidKotlinProject",
                 active = true)
 
         assignmentService.addTagToAssignment(assignment, "sample")
-        assignmentService.addTagToAssignment(assignment, "gradle")
+        assignmentService.addTagToAssignment(assignment, "android")
         assignmentService.addTagToAssignment(assignment, "kotlin")
 
-        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleGradleKotlinProjectNoPackage",
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleAndroidKotlinProject",
                 testClass = "TestTeacherProject", testMethod = "testFindMax"))
-        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleGradleKotlinProjectNoPackage",
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleAndroidKotlinProject",
                 testClass = "TestTeacherProject", testMethod = "testFindMaxAllNegative"))
-        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleGradleKotlinProjectNoPackage",
+        assignmentTestMethodRepository.save(AssignmentTestMethod(assignmentId = "sampleAndroidKotlinProject",
                 testClass = "TestTeacherProject", testMethod = "testFindMaxNegativeAndPositive"))
 
         val gitRepository = assignment.gitRepositoryUrl
@@ -339,6 +341,7 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
             LOG.error("Error cloning ${gitRepository} - ${e}")
         }
     }
+
 
     /**
      * This is an auxiliary function to create fake submissions to place in the "in-memory" database.
@@ -396,5 +399,4 @@ class ApplicationContextListener(val assignmentRepository: AssignmentRepository,
 
         return submission.id
     }
-
 }

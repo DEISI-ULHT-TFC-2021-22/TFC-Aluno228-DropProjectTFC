@@ -91,6 +91,10 @@ class AssignmentController(
     @Value("\${mavenizedProjects.rootLocation}")
     val mavenizedProjectsRootLocation: String = ""
 
+    //NEW: Added Android SDK location
+    @Value("\${dropProject.android.home}")
+    val androidHome : String = ""
+
     @Value("\${storage.rootLocation}/upload")
     val uploadSubmissionsRootLocation: String = "submissions/upload"
 
@@ -115,6 +119,7 @@ class AssignmentController(
 
     /**
      * Controller that handles HTTP POST requests for the [Assignment] creation form.
+     * NEW: Added check for Android SDK install in creation of [Assignment]
      *
      * @param assignmentForm is an [AssignmentForm]
      * @param bindingResult is a [BindingResult]
@@ -135,6 +140,16 @@ class AssignmentController(
         }
 
         var mustSetupGitConnection = false
+
+        //Check if Android is picked in form
+        //If it is, check if Android SDK has been installed
+        if (assignmentForm.engine == Engine.ANDROID) {
+            if (androidHome.equals("${DP_AND_HOME}")) {
+                LOG.warn("Error: To create Android assignments you must install the Android SDK")
+                //bindingResult.rejectValue("Error: To create Android assignments you must install the Android SDK")
+                return "assignment-form"
+            }
+        }
 
         if (assignmentForm.acceptsStudentTests &&
                 (assignmentForm.minStudentTests == null || assignmentForm.minStudentTests!! < 1)) {

@@ -17,6 +17,13 @@ Results video: https://youtu.be/Bm7NHHo-Nao
 
 This video demonstrates how to achieve the results found in the report. This is not a guide of any sorts, serving simply as a means of showing that the results obtained can be found in the project. The user can also use this video to understand how the project works and how to move around it.
 
+## Server (Link and Description)
+
+Server link: https://drop-project.duckdns.org/
+
+In this Server you can use all of the services capabilities, excluding Android, without needing to set anything up. 
+The service is ran on a server setup by the TFC advisor and is updated with the current version of the project.
+
 ## Heroku (Deployment and Usage)
 
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy?template=https://github.com/Diogo-a21905661/drop-project-tfc)
@@ -36,6 +43,10 @@ Gradle Assignment (Kotlin): https://github.com/Diogo-a21905661/test-kotlin-gradl
 Gradle Assignment (Java): https://github.com/Diogo-a21905661/test-java-gradle-assignment
 
 Kotlin Submission (usable in both Maven and Gradle): https://github.com/Diogo-a21905661/test-kotlin-submission
+
+Android Assignment (Kotlin): https://github.com/Diogo-a21905661/test-kotlin-android-assignment
+
+Android Submission (Kotlin): https://github.com/Diogo-a21905661/test-android-submission
 
 ## Description
 
@@ -92,6 +103,17 @@ in the following files:
 
      src/main/resources/drop-project.properties
      src/test/resources/drop-project-test.properties 
+
+In case you want to upload Android assignments, via the Drop Project engine, you will also need to add the following property:
+
+    dropProject.android.home=<path_to_android_sdk>
+
+in the following file:
+
+     src/main/resources/drop-project.properties
+     
+This property is the Android SDK, and it will be used for the compilation of Android assignments and submissions.
+To install the SDK, first you have to install Android Studio. In this IDE you can install an SDK and then move it to a new folder. This folder will be the path to your Android SDK and is be the property you will want to use.
 
 Note:
 

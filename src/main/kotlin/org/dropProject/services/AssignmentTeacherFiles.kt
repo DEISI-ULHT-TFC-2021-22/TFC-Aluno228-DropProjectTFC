@@ -74,7 +74,6 @@ class AssignmentTeacherFiles(val buildWorker: BuildWorker,
 
         val rootFolder = File(assignmentsRootLocation, assignment.gitRepositoryFolder)
         FileUtils.copyDirectory(rootFolder, mavenizedProjectFolder) {
-            LOG.info("It Folder Path == ${it}")
             !it.absolutePath.startsWith("${rootFolder.absolutePath}/src/main") &&
                     !it.absolutePath.startsWith("${rootFolder.absolutePath}/.git") &&
                     !it.absolutePath.startsWith("${rootFolder.absolutePath}/target")
@@ -120,12 +119,12 @@ class AssignmentTeacherFiles(val buildWorker: BuildWorker,
 
         //Use the validator depending on the engine
         val assignmentValidator: AssignmentValidator
-        if (assignment.engine == Engine.MAVEN) {
+        if (assignment.engine == Engine.MAVEN) { //engine is maven
             assignmentValidator = applicationContext.getBean(AssignmentValidatorMaven::class.java)
-        } else if (assignment.engine == Engine.GRADLE) {
+        } else if (assignment.engine == Engine.GRADLE) { //engine is gradle
             assignmentValidator = applicationContext.getBean(AssignmentValidatorGradle::class.java)
-        } else {
-            assignmentValidator = applicationContext.getBean(AssignmentValidatorGradle::class.java)
+        } else { //engine is Android
+            assignmentValidator = applicationContext.getBean(AssignmentValidatorAndroid::class.java)
         }
 
         //Run validator (function is abstract between both classes)

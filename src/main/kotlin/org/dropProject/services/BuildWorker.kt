@@ -59,7 +59,8 @@ class BuildWorker(
         val jUnitReportRepository: JUnitReportRepository,
         val jacocoReportRepository: JacocoReportRepository,
         val buildReportBuilderMaven: BuildReportBuilderMaven,
-        val buildReportBuilderGradle: BuildReportBuilderGradle) {
+        val buildReportBuilderGradle: BuildReportBuilderGradle,
+        val buildReportBuilderAndroid: BuildReportBuilderAndroid) {
 
     val LOG = LoggerFactory.getLogger(this.javaClass.name)
 
@@ -110,19 +111,19 @@ class BuildWorker(
             buildGradle(result, assignment, submission, projectFolder, realPrincipalName, dontChangeStatusDate, rebuildByTeacher)
         } else if (assignment.engine == Engine.ANDROID) { //Assignment engine is Android
             if (assignment.maxMemoryMb != null) {
-                LOG.info("[${authorsStr}] Started gradle invocation (max: ${assignment.maxMemoryMb}Mb)")
+                LOG.info("[${authorsStr}] Started android invocation (max: ${assignment.maxMemoryMb}Mb)")
             } else {
-                LOG.info("[${authorsStr}] Started gradle invocation")
+                LOG.info("[${authorsStr}] Started android invocation")
             }
 
             //Run invoker of engine (clean, compile, test)
             result = gradleInvoker.run(projectFolder, realPrincipalName, assignment)
 
-            //Create build report for Gradle
-            buildGradle(result, assignment, submission, projectFolder, realPrincipalName, dontChangeStatusDate, rebuildByTeacher)
+            //Create build report for Android
+            buildAndroid(result, assignment, submission, projectFolder, realPrincipalName, dontChangeStatusDate, rebuildByTeacher)
         }
 
-        //Part is functional for both compilers
+        //Part is functional for all engines
         submission.gitSubmissionId?.let {
             gitSubmissionId ->
                 val gitSubmission = gitSubmissionRepository.getById(gitSubmissionId)
@@ -295,7 +296,6 @@ class BuildWorker(
             result.tooMuchOutput() -> submission.setStatus(SubmissionStatus.TOO_MUCH_OUTPUT,
                                                                     dontUpdateStatusDate = dontChangeStatusDate)
             else -> { 
-
                 // get build report
                 val buildReport = buildReportBuilderGradle.build(result.outputLines, projectFolder.absolutePath,
                         assignment, submission)
@@ -388,6 +388,110 @@ class BuildWorker(
         }
     }
 
+    //Create build report for Android (currently almost the same as buildGradle)
+    private fun buildAndroid(result: Result, assignment: Assignment, submission: Submission, 
+                        projectFolder: File, realPrincipalName: String?, dontChangeStatusDate: Boolean,  rebuildByTeacher: Boolean) {
+        LOG.info("Build report started for Android.")
+       
+        // check result for errors (expired, too much output)
+        when {
+            result.expiredByTimeout -> submission.setStatus(SubmissionStatus.ABORTED_BY_TIMEOUT,
+                                                                    dontUpdateStatusDate = dontChangeStatusDate)
+            result.tooMuchOutput() -> submission.setStatus(SubmissionStatus.TOO_MUCH_OUTPUT,
+                                                                    dontUpdateStatusDate = dontChangeStatusDate)
+            else -> { 
+                // get build report
+                val buildReport = buildReportBuilderAndroid.build(result.outputLines, projectFolder.absolutePath,
+                        assignment, submission)
+
+                // clear previous indicators except PROJECT_STRUCTURE
+                submissionReportRepository.deleteBySubmissionIdExceptProjectStructure(submission.id)
+
+                //Check if we got any fatal errors
+                if (!buildReport.executionFailed()) {
+                    //if not then submission can be added
+                    submissionReportRepository.save(SubmissionReport(submissionId = submission.id,
+                            reportKey = Indicator.COMPILATION.code, reportValue = if (buildReport.compilationErrors().isEmpty()) "OK" else "NOK"))
+
+                    //Check if there are any project compilation errors
+                    if (buildReport.compilationErrors().isEmpty()) {
+                        if (buildReport.checkstyleValidationActive()) {
+                            submissionReportRepository.save(SubmissionReport(submissionId = submission.id,
+                                    reportKey = Indicator.CHECKSTYLE.code, reportValue = if (buildReport.checkstyleErrors().isEmpty()) "OK" else "NOK"))
+                        }
+
+                        //Check student tests
+                        if (assignment.acceptsStudentTests) {
+                            LOG.info("Checked for student tests!")
+
+                            val junitSummary = buildReport.junitSummaryAsObject(TestType.STUDENT)
+                            val indicator =
+                                    if (buildReport.hasJUnitErrors(TestType.STUDENT) == true) {
+                                        "NOK"
+                                    } else if (junitSummary?.numTests == null || junitSummary.numTests < assignment.minStudentTests!!) {
+                                        // student hasn't implemented enough tests
+                                        "Not Enough Tests"
+                                    } else {
+                                        "OK"
+                                    }
+
+                            submissionReportRepository.save(SubmissionReport(submissionId = submission.id,
+                                    reportKey = Indicator.STUDENT_UNIT_TESTS.code,
+                                    reportValue = indicator,
+                                    reportProgress = junitSummary?.progress,
+                                    reportGoal = junitSummary?.numTests))   
+                        }
+
+                        //Check if teacher tests have errors
+                        if (buildReport.hasJUnitErrors(TestType.TEACHER) != null) {
+                            val junitSummary = buildReport.junitSummaryAsObject(TestType.TEACHER)
+
+                            submissionReportRepository.save(SubmissionReport(submissionId = submission.id,
+                                    reportKey = Indicator.TEACHER_UNIT_TESTS.code,
+                                    reportValue = if (buildReport.hasJUnitErrors(TestType.TEACHER) == true) "NOK" else "OK",
+                                    reportProgress = junitSummary?.progress,
+                                    reportGoal = junitSummary?.numTests))
+                        }
+
+                        //Check if hidden tests have errors
+                        if (buildReport.hasJUnitErrors(TestType.HIDDEN) != null) {
+                            val junitSummary = buildReport.junitSummaryAsObject(TestType.HIDDEN)
+
+                            submissionReportRepository.save(SubmissionReport(submissionId = submission.id,
+                                    reportKey = Indicator.HIDDEN_UNIT_TESTS.code,
+                                    reportValue = if (buildReport.hasJUnitErrors(TestType.HIDDEN) == true) "NOK" else "OK",
+                                    reportProgress = junitSummary?.progress,
+                                    reportGoal = junitSummary?.numTests))
+                        }
+                    }
+                }
+
+                //Get report output
+                val buildReportDB = buildReportRepository.save(org.dropProject.dao.BuildReport(buildReport = buildReport.getOutput()))
+                submission.buildReportId = buildReportDB.id
+
+                //Store the report in the DB 
+                File("${projectFolder}/target/surefire-reports")
+                        .walkTopDown()
+                        .filter { it -> it.name.endsWith(".xml") }
+                        .forEach {
+                            val report = JUnitReport(submissionId = submission.id, fileName = it.name,
+                                    xmlReport = it.readText(Charset.forName("UTF-8")))
+                            jUnitReportRepository.save(report)
+                        }
+
+                //TO DO: For now Android has no coverage report, have to add (take example from Maven)
+
+                //Set status of submission
+                if (!rebuildByTeacher) {
+                    submission.setStatus(SubmissionStatus.VALIDATED, dontUpdateStatusDate = dontChangeStatusDate)
+                } else {
+                    submission.setStatus(SubmissionStatus.VALIDATED_REBUILT, dontUpdateStatusDate = dontChangeStatusDate)
+                }
+            }
+        }
+    }
+
     /**
      * NEW: Added Gradle check for LOG comparable to Maven
      * Checks an [Assignment], performing all the relevant steps and generates the respective [BuildReport].
@@ -421,13 +525,13 @@ class BuildWorker(
                 LOG.info("Gradle invoker aborted by timeout for ${assignment.id}")
             }
         } else if (assignment.engine == Engine.ANDROID) { //Assignment is Android
-            val gradleResult = gradleInvoker.run(assignmentFolder, principalName, assignment)
-            if (!gradleResult.expiredByTimeout) {
-                LOG.info("Gradle invoker OK for ${assignment.id}")
+            val androidResult = gradleInvoker.run(assignmentFolder, principalName, assignment) //(still built using gradle)
+            if (!androidResult.expiredByTimeout) {
+                LOG.info("Android invoker OK for ${assignment.id}")
 
-                return buildReportBuilderGradle.build(gradleResult.outputLines, assignmentFolder.absolutePath, assignment)
+                return buildReportBuilderAndroid.build(androidResult.outputLines, assignmentFolder.absolutePath, assignment)
             } else {
-                LOG.info("Gradle invoker aborted by timeout for ${assignment.id}")
+                LOG.info("Android invoker aborted by timeout for ${assignment.id}")
             }
         }
 
