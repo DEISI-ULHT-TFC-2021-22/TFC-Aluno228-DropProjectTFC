@@ -141,12 +141,10 @@ class AssignmentController(
 
         var mustSetupGitConnection = false
 
-        //Check if Android is picked in form
-        //If it is, check if Android SDK has been installed
+        //Check if Android SDK has been installed
         if (assignmentForm.engine == Engine.ANDROID) {
-            if (androidHome.equals("${DP_AND_HOME}")) {
+            if (androidHome.equals("placeholder")) {
                 LOG.warn("Error: To create Android assignments you must install the Android SDK")
-                //bindingResult.rejectValue("Error: To create Android assignments you must install the Android SDK")
                 return "assignment-form"
             }
         }

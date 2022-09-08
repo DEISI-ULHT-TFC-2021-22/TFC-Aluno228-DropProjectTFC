@@ -533,6 +533,13 @@ class UploadController(
         //Check language
         val mainFile = if (assignment.language == Language.JAVA) "MainActivity.java" else "MainActivity.kt"
 
+        //Check if Android SDK has been installed
+        if (assignment.engine == Engine.ANDROID) {
+            if (androidHome.equals("placeholder")) {
+                erros.add("O Android SDK não foi instalado e não pode ser utilizado")
+            }
+        }
+
         //Check for src (app, src, main, java)
         if (!File(projectFolder, "app/").existsCaseSensitive() || 
             !File(projectFolder, "app/src").existsCaseSensitive() || 
