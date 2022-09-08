@@ -51,6 +51,7 @@ fun hasCoverageReport(mavenizedProjectFolder: File): Boolean {
 class BuildWorker(
         val mavenInvoker: MavenInvoker,
         val gradleInvoker: GradleInvoker,
+        val androidInvoker: AndroidInvoker,
         val assignmentRepository: AssignmentRepository,
         val submissionRepository: SubmissionRepository,
         val gitSubmissionRepository: GitSubmissionRepository,
@@ -116,8 +117,8 @@ class BuildWorker(
                 LOG.info("[${authorsStr}] Started android invocation")
             }
 
-            //Run invoker of engine (clean, compile, test)
-            result = gradleInvoker.run(projectFolder, realPrincipalName, assignment)
+            //Run invoker of engine (clean)
+            result = androidInvoker.run(projectFolder, realPrincipalName, assignment)
 
             //Create build report for Android
             buildAndroid(result, assignment, submission, projectFolder, realPrincipalName, dontChangeStatusDate, rebuildByTeacher)
@@ -525,7 +526,7 @@ class BuildWorker(
                 LOG.info("Gradle invoker aborted by timeout for ${assignment.id}")
             }
         } else if (assignment.engine == Engine.ANDROID) { //Assignment is Android
-            val androidResult = gradleInvoker.run(assignmentFolder, principalName, assignment) //(still built using gradle)
+            val androidResult = androidInvoker.run(assignmentFolder, principalName, assignment) //(still built using gradle)
             if (!androidResult.expiredByTimeout) {
                 LOG.info("Android invoker OK for ${assignment.id}")
 
