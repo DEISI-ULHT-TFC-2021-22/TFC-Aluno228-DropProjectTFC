@@ -9,11 +9,11 @@
 
 ## Videos (Setup and Results)
 
-Setup video: https://youtu.be/DbW4vWih8h8
+Setup video: https://youtu.be/-anDD6zGHr0
 
 This video explains the process of setting Drop Project up either locally or using the Heroku deployment service. This is not a necessary process to run the project as the heroku link, found in the chapter found below, allows you to run it using a version of Drop Project deployed by the GitHub owner.
 
-Results video: https://youtu.be/Bm7NHHo-Nao
+Demonstration video: https://youtu.be/YPrNa21vFEw
 
 This video demonstrates how to achieve the results found in the report. This is not a guide of any sorts, serving simply as a means of showing that the results obtained can be found in the project. The user can also use this video to understand how the project works and how to move around it.
 
